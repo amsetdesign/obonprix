@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ô Bon Prix — Supérette en ligne
 
-## Getting Started
+Site e-commerce pour la supérette Ô Bon Prix (Dakar, Sénégal), avec catalogue produits,
+panier, commande via WhatsApp et panneau d'administration.
 
-First, run the development server:
+## Démarrage
 
 ```bash
+npm install
+cp .env.example .env.local   # puis renseigner ADMIN_PASSWORD
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ouvrir [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Variables d'environnement
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Voir `.env.example` :
 
-## Learn More
+- `ADMIN_PASSWORD` — mot de passe du panneau d'administration (`/admin`)
+- `NEXT_PUBLIC_WHATSAPP_NUMBER` — numéro WhatsApp Business (format international sans `+`)
+- `NEXT_PUBLIC_SITE_NAME` — nom affiché du site
 
-To learn more about Next.js, take a look at the following resources:
+## Panneau d'administration
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Accessible sur `/admin`. Permet d'ajouter, modifier et supprimer des produits du
+catalogue. Les données sont stockées dans `data/products.json` et `data/categories.json`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Stack
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Next.js (App Router) + TypeScript + Tailwind CSS v4
+- Panier persistant en `localStorage`
+- Commande transmise via un lien `wa.me` pré-rempli
+- Stockage produits en fichier JSON (pas de base de données requise)

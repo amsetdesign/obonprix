@@ -1,0 +1,10 @@
+[
+  { "slug": "epicerie", "name": "Épicerie", "emoji": "🌾", "gradient": "from-amber-100 to-amber-50" },
+  { "slug": "boissons", "name": "Boissons", "emoji": "🥤", "gradient": "from-sky-100 to-sky-50" },
+  { "slug": "frais-laitier", "name": "Frais & Laitier", "emoji": "🧀", "gradient": "from-yellow-100 to-yellow-50" },
+  { "slug": "surgeles", "name": "Surgelés", "emoji": "🧊", "gradient": "from-cyan-100 to-cyan-50" },
+  { "slug": "hygiene-beaute", "name": "Hygiène & Beauté", "emoji": "🧴", "gradient": "from-pink-100 to-pink-50" },
+  { "slug": "entretien", "name": "Entretien maison", "emoji": "🧼", "gradient": "from-emerald-100 to-emerald-50" },
+  { "slug": "snacking", "name": "Snacking & Sucré", "emoji": "🍫", "gradient": "from-orange-100 to-orange-50" },
+  { "slug": "bebe", "name": "Bébé", "emoji": "🍼", "gradient": "from-violet-100 to-violet-50" }
+]
