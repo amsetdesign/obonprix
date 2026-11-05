@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+/* ───────────── Identité Ô Bon Prix : rouge du logo, jaune « Superette », blanc ───────────── */
+@theme {
+  --color-red: #d1141b; /* rouge du logo */
+  --color-red-700: #a80f15; /* survol des boutons */
+  --color-red-50: #fdecec; /* fonds d'alerte doux */
+  --color-sun: #f7be16; /* jaune « Superette » */
+  --color-sun-100: #fff4cf;
+  --color-ink: #1b1716; /* texte */
+  --color-cream: #faf7f2; /* fond de travail */
+  --color-line: #ebe4da;
+  --color-mute: #6f6760; /* texte secondaire */
+  --color-leaf: #1f7a4d; /* confirmations (stock suffisant, paiement reçu) */
+  --color-leaf-50: #e8f4ee;
+
+  --font-display: var(--font-montserrat), "Montserrat", system-ui, sans-serif;
+  --font-sans: var(--font-dmsans), "DM Sans", system-ui, sans-serif;
+
+  --radius-card: 16px;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-sun);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-red);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* Classes maison (Tailwind 4 : @utility pour pouvoir les combiner avec les autres classes) */
+@utility btn { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold transition-colors duration-150 disabled:opacity-60; }
+@utility btn-primary { @apply btn bg-red text-white hover:bg-red-700; }
+@utility btn-sun { @apply btn bg-sun text-ink hover:bg-[#e5ad0a]; }
+@utility btn-ghost { @apply btn border border-line bg-white text-ink hover:border-ink/30; }
+@utility field { @apply block w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-[15px] text-ink outline-none transition-colors placeholder:text-mute/70 focus:border-red; }
+@utility label { @apply mb-1.5 block text-sm font-medium text-ink; }
+@utility card { @apply rounded-[var(--radius-card)] border border-line bg-white; }
+@utility pill { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold; }
+
+/* les nombres alignés dans les tableaux */
+.tabular { font-variant-numeric: tabular-nums; }
