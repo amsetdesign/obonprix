@@ -24,7 +24,7 @@ export default async function ThanksPage() {
   const payNumber = (order.payment_method === "om" ? settings?.om_number : settings?.wave_number) ?? "78 737 82 90";
   return (
     <main className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-6">
-      <ClearCart />
+      <ClearCart number={order.number} total={order.total} />
       <div className="flex items-center gap-5">
         <Image src="/egeries/detoure/victoire.webp" alt="" width={140} height={168} className="hidden h-auto w-28 sm:block" />
         <div>
@@ -35,7 +35,7 @@ export default async function ThanksPage() {
       </div>
       <PayInstructions o={order} payNumber={payNumber} whatsapp={settings?.whatsapp ?? "221787378290"} />
       <OrderStatus o={order} />
-      <p className="text-sm text-mute">Revenez à tout moment sur <Link href="/suivi" className="font-semibold text-red underline-offset-4 hover:underline">Suivre ma commande</Link> avec ce numéro et votre téléphone.</p>
+      <p className="text-sm text-mute">Retrouvez cette commande à tout moment dans <Link href="/mes-commandes" className="font-semibold text-red underline-offset-4 hover:underline">Mes commandes</Link>, sur ce téléphone.</p>
     </main>
   );
 }

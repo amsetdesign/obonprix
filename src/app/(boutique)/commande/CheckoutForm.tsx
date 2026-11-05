@@ -1,17 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useCart, lineTotal } from "@/lib/cart";
 import { fcfa } from "@/lib/format";
 import type { Zone } from "@/lib/shop";
 import { IconPin } from "@/components/icons";
+import { forgetCustomer, loadCustomer, saveCustomer, savePending, type CustomerInfo } from "@/lib/customer";
 import { placeOrder, type CheckoutState } from "./actions";
 
+/** Charge d'abord les coordonnées gardées sur ce téléphone, puis affiche le formulaire pré-rempli */
 export default function CheckoutForm({ zones }: { zones: Zone[] }) {
+  const [saved, setSaved] = useState<CustomerInfo | null | undefined>(undefined);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- lecture unique du stockage local après hydratation
+    setSaved(loadCustomer());
+  }, []);
+  if (saved === undefined) return <p className="mt-6 text-mute">Chargement…</p>;
+  // un quartier gardé qui n'est plus desservi n'est pas repris
+  const known = !saved || saved.delivery === "yango" || zones.some((z) => z.areas.some((a) => `z:${z.id}:${a}` === saved.delivery));
+  const initial = saved ? { ...saved, delivery: known ? saved.delivery : "" } : null;
+  return <CheckoutInner zones={zones} saved={initial} onForget={() => { forgetCustomer(); setSaved(null); }} key={initial ? "connu" : "nouveau"} />;
+}
+
+function CheckoutInner({ zones, saved, onForget }: { zones: Zone[]; saved: CustomerInfo | null; onForget: () => void }) {
   const { lines, subtotal, ready } = useCart();
   const [state, action, pending] = useActionState<CheckoutState, FormData>(placeOrder, {});
-  const f = state.fields ?? {};
+  const f: Partial<Record<string, string>> = state.fields ?? saved ?? {};
   const [delivery, setDelivery] = useState(f.delivery ?? "");
   const [payment, setPayment] = useState(f.payment ?? "wave");
   const [geo, setGeo] = useState<{ lat: string; lng: string; status: "idle" | "wait" | "ok" | "error" }>({ lat: f.lat ?? "", lng: f.lng ?? "", status: f.lat ? "ok" : "idle" });
@@ -35,13 +50,29 @@ export default function CheckoutForm({ zones }: { zones: Zone[] }) {
   }
 
   return (
-    <form action={action} className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
+    <form
+      action={action}
+      onSubmit={(e) => {
+        // ce téléphone se souvient du client pour la prochaine fois
+        const fd = new FormData(e.currentTarget);
+        const v = (k: string) => String(fd.get(k) ?? "");
+        saveCustomer({ name: v("name"), phone: v("phone"), delivery: v("delivery"), area_other: v("area_other"), address: v("address"), landmark: v("landmark"), payment: v("payment") });
+        savePending(lines, v("phone"));
+      }}
+      className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]"
+    >
       <input type="hidden" name="items" value={JSON.stringify(lines.map((l) => ({ product_id: l.id, qty: l.qty })))} />
       <input type="hidden" name="lat" value={geo.lat} />
       <input type="hidden" name="lng" value={geo.lng} />
       <div className="sr-only" aria-hidden><label>Site web<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
 
       <div className="space-y-6">
+        {saved && !state.fields && (
+          <p className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-leaf-50 px-4 py-3 text-sm text-leaf">
+            <span>Bon retour{saved.name ? ` ${saved.name.split(" ")[0]}` : ""} ! Vos informations sont déjà remplies, vérifiez-les puis validez.</span>
+            <button type="button" onClick={onForget} className="text-ink/70 underline underline-offset-4 hover:text-red">Ce n&apos;est pas moi</button>
+          </p>
+        )}
         <fieldset className="card space-y-4 p-5">
           <legend className="float-left mb-1 font-display text-lg font-extrabold">Vos coordonnées</legend>
           <div className="clear-both grid gap-4 sm:grid-cols-2">

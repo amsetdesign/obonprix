@@ -14,6 +14,7 @@ export const IconClose = ({ className }: P) => (<svg {...base} className={classN
 export const IconPlus = ({ className }: P) => (<svg {...base} className={className}><path d="M12 5v14M5 12h14" /></svg>);
 export const IconMinus = ({ className }: P) => (<svg {...base} className={className}><path d="M5 12h14" /></svg>);
 export const IconArrow = ({ className }: P) => (<svg {...base} className={className}><path d="M5 12h14M13 6l6 6-6 6" /></svg>);
+export const IconReceipt = ({ className }: P) => (<svg {...base} className={className}><path d="M6 3.5h12v17l-2.4-1.6-2.4 1.6-2.4-1.6-2.4 1.6L6 20.5z" /><path d="M9 8.5h6M9 12h6M9 15.5h3.5" /></svg>);
 export const IconTrash = ({ className }: P) => (<svg {...base} className={className}><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l.8 12.5h9.4L17.5 7" /></svg>);
 
 // Rayons

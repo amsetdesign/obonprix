@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useCart, lineTotal } from "@/lib/cart";
 import { fcfa } from "@/lib/format";
@@ -9,6 +10,14 @@ import { IconArrow, IconTrash } from "@/components/icons";
 
 export default function CartView() {
   const { lines, subtotal, remove, ready } = useCart();
+  const [notice, setNotice] = useState("");
+  // message laissé par « Commander à nouveau » (produits devenus indisponibles)
+  useEffect(() => {
+    try {
+      const n = sessionStorage.getItem("obp-avis-panier");
+      if (n) { sessionStorage.removeItem("obp-avis-panier"); setNotice(n); } // eslint-disable-line react-hooks/set-state-in-effect
+    } catch { /* sans conséquence */ }
+  }, []);
   if (!ready) return <p className="mt-6 text-mute">Chargement du panier…</p>;
   if (!lines.length) {
     return (
@@ -24,6 +33,7 @@ export default function CartView() {
   }
   return (
     <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_300px]">
+      {notice && <p role="status" className="rounded-xl bg-sun-100 px-4 py-3 text-sm lg:col-span-2">{notice}</p>}
       <ul className="card divide-y divide-line">
         {lines.map((l) => (
           <li key={l.id} className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-3 p-4 sm:grid-cols-[1fr_150px_100px_auto]">

@@ -56,7 +56,7 @@ export default function Footer({ categories, settings }: { categories: Category[
               <IconWhatsapp className="size-5" /> Écrire sur WhatsApp
             </a>
           </div>
-          <p className="text-white/80"><Link href="/suivi" className="underline underline-offset-4 hover:text-white">Suivre ma commande</Link></p>
+          <p className="space-x-4 text-white/80"><Link href="/mes-commandes" className="underline underline-offset-4 hover:text-white">Mes commandes</Link><Link href="/suivi" className="underline underline-offset-4 hover:text-white">Suivre une commande</Link></p>
         </div>
       </div>
       <p className="border-t border-white/10 py-5 text-center text-xs text-white/50">© {new Date().getFullYear()} Ô Bon Prix Superette, Dakar</p>
