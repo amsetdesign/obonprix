@@ -14,6 +14,7 @@ export type ProductValues = {
   description: string;
   is_active: boolean;
   is_online: boolean;
+  featured?: boolean;
   image_url: string;
 };
 
@@ -99,6 +100,10 @@ export default function ProductForm({ action, categories, initial = EMPTY, isNew
             <label className="flex items-center gap-2.5 text-sm font-medium">
               <input type="checkbox" name="is_online" defaultChecked={initial.is_online} className="size-5 accent-[var(--color-red)]" />
               Vendu en ligne (site et application)
+            </label>
+            <label className="flex items-center gap-2.5 text-sm font-medium">
+              <input type="checkbox" name="featured" defaultChecked={initial.featured ?? false} className="size-5 accent-[var(--color-red)]" />
+              Mis en avant à l&apos;accueil
             </label>
           </div>
         </div>

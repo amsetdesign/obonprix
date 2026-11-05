@@ -73,6 +73,27 @@ export async function getHighlights(limit = 10) {
   return picked;
 }
 
+/** Produits prioritaires du bloc de gauche (case « Mis en avant à l'accueil »), disponibles d'abord */
+export async function getFeatured(limit = 6) {
+  if (!hasSupabase) return [];
+  const { data } = await online().eq("featured", true).limit(30);
+  return sortProducts((data ?? []).map(toShop)).slice(0, limit);
+}
+
+export async function getPromotions() {
+  if (!hasSupabase) return [];
+  const { data } = await online().not("promo_price", "is", null).limit(200);
+  return sortProducts((data ?? []).map(toShop));
+}
+
+/** Nombre de produits en promotion (bandeau du haut) */
+export const getPromoCount = cache(async () => {
+  if (!hasSupabase) return 0;
+  const { count } = await publicClient().from("products").select("id", { count: "exact", head: true })
+    .eq("is_active", true).eq("is_online", true).not("promo_price", "is", null).gt("stock", 0);
+  return count ?? 0;
+});
+
 export async function searchProducts(q: string) {
   if (!hasSupabase || q.trim().length < 2) return [];
   const { data } = await online().limit(400);

@@ -22,9 +22,9 @@ export default function ProductThumb({ name, image, rayon, sizes, className = ""
   }
   const s = (rayon && RAYON_STYLE[rayon]) || FALLBACK;
   return (
-    <div className={`flex flex-col items-center justify-center gap-2 p-3 text-center ${className}`} style={{ background: s.tint, color: s.ink }}>
-      <s.Icon className="size-9 opacity-80" />
-      <span className="line-clamp-2 font-display text-[13px] font-bold leading-tight">{name}</span>
+    <div className={`flex flex-col items-center justify-center gap-2 p-2 text-center ${className}`} style={{ background: s.tint, color: s.ink }}>
+      <s.Icon className={name ? "size-9 opacity-80" : "size-6 opacity-80"} />
+      {name && <span className="line-clamp-2 font-display text-[13px] font-bold leading-tight">{name}</span>}
     </div>
   );
 }

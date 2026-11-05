@@ -1,10 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getCategories, getHighlights, getSettings, getZones } from "@/lib/shop";
+import { getCategories, getFeatured, getHighlights, getPromoCount, getZones } from "@/lib/shop";
 import { fcfa } from "@/lib/format";
+import FeaturedColumn from "@/components/shop/FeaturedColumn";
+import HeroSlider from "@/components/shop/HeroSlider";
 import ProductCard from "@/components/shop/ProductCard";
 import { RAYON_STYLE } from "@/components/shop/ProductThumb";
-import { IconArrow, IconPhone, IconTruck, IconWallet, IconWhatsapp } from "@/components/icons";
+import { IconArrow, IconPhone, IconTruck, IconWallet } from "@/components/icons";
 
 export const revalidate = 60;
 
@@ -15,56 +17,43 @@ const STEPS = [
 ];
 
 export default async function Home() {
-  const [categories, highlights, zones, settings] = await Promise.all([getCategories(), getHighlights(10), getZones(), getSettings()]);
+  const [categories, highlights, zones, featured, promoCount] = await Promise.all([getCategories(), getHighlights(10), getZones(), getFeatured(8), getPromoCount()]);
   const catSlug = new Map(categories.map((c) => [c.id, c.slug]));
   const minFee = zones.length ? Math.min(...zones.map((z) => z.price)) : 1000;
-  const wa = settings?.whatsapp ?? "221787378290";
 
   return (
     <main>
-      {/* Accueil : la promesse et l'égérie au panier */}
-      <section className="bg-[#f6f4fc]">
-        <div className="mx-auto grid max-w-6xl items-center gap-6 px-4 pt-8 sm:px-6 md:grid-cols-[1.05fr_1fr] md:pt-4">
-          <div className="space-y-5 py-4 md:py-12">
-            <p className="pill bg-sun text-ink">Supérette en ligne à Dakar</p>
-            <h1 className="font-display text-4xl leading-[1.05] font-black text-ink sm:text-5xl lg:text-6xl">
-              Vos courses, <span className="text-red">livrées</span> chez vous.
-            </h1>
-            <p className="max-w-md text-lg text-ink/75">
-              Produits frais, épicerie, boissons et hygiène au bon prix. Payez par Wave ou Orange Money, livraison dès {fcfa(minFee)}.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href={categories[0] ? `/rayons/${categories[0].slug}` : "/recherche"} className="btn-primary min-h-12 px-7 text-base">
-                Faire mes courses <IconArrow className="size-4" />
-              </Link>
-              <a href={`https://wa.me/${wa}`} className="btn-ghost min-h-12 px-6 text-base">
-                <IconWhatsapp className="size-5 text-[#1f9d55]" /> Commander sur WhatsApp
-              </a>
-            </div>
+      {/* Haut de page : produits prioritaires (bloc 1), diaporama (bloc 2), rayons (bloc 3) */}
+      <div className="mx-auto max-w-6xl space-y-4 px-4 pt-4 sm:px-6">
+        <div className={`grid gap-4 lg:h-[360px] ${featured.length ? "lg:grid-cols-[300px_1fr]" : ""}`}>
+          <div className="order-2 min-h-0 lg:order-1">
+            <FeaturedColumn products={featured} rayonOf={(p) => catSlug.get(p.category_id ?? 0)} />
           </div>
-          <div className="relative mx-auto w-full max-w-md md:max-w-none">
-            <Image src="/egeries/panier.webp" alt="Une cliente Ô Bon Prix tenant un panier de courses" width={1100} height={863} priority sizes="(min-width: 768px) 50vw, 100vw" className="h-auto w-full" />
+          <div className="order-1 aspect-[2/1] lg:order-2 lg:aspect-auto lg:h-full">
+            <HeroSlider minFee={fcfa(minFee)} promoCount={promoCount} />
           </div>
         </div>
-      </section>
 
-      {/* Rayons */}
-      <section className="mx-auto max-w-6xl px-4 pt-12 sm:px-6">
-        <h2 className="font-display text-2xl font-extrabold sm:text-3xl">Nos rayons</h2>
-        <ul className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {categories.map((c) => {
-            const s = RAYON_STYLE[c.slug];
-            return (
-              <li key={c.slug}>
-                <Link href={`/rayons/${c.slug}`} className="flex h-full flex-col justify-between gap-6 rounded-[var(--radius-card)] p-4 transition-transform hover:-translate-y-0.5" style={{ background: s?.tint, color: s?.ink }}>
-                  {s && <s.Icon className="size-8" />}
-                  <span className="font-display text-base leading-tight font-extrabold">{c.name}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
+        <h1 className="sr-only">Ô Bon Prix, supérette en ligne à Dakar : vos courses livrées chez vous</h1>
+        <nav id="rayons" aria-label="Nos rayons" className="scroll-mt-32">
+          <ul className="flex gap-3 overflow-x-auto pb-1 lg:grid lg:grid-cols-6 lg:overflow-visible">
+            {categories.map((c) => {
+              const s = RAYON_STYLE[c.slug];
+              return (
+                <li key={c.slug} className="w-36 shrink-0 lg:w-auto">
+                  <Link href={`/rayons/${c.slug}`} className="group flex h-full flex-col justify-between gap-5 rounded-[var(--radius-card)] p-4 transition-transform hover:-translate-y-0.5" style={{ background: s?.tint, color: s?.ink }}>
+                    <span className="flex items-start justify-between">
+                      {s && <s.Icon className="size-8" />}
+                      <IconArrow className="size-4 opacity-50 transition-opacity group-hover:opacity-100" />
+                    </span>
+                    <span className="font-display text-[15px] leading-tight font-extrabold">{c.name}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </div>
 
       {/* Sélection du moment */}
       {highlights.length > 0 && (
@@ -100,7 +89,7 @@ export default async function Home() {
       </section>
 
       {/* Livraison */}
-      <section className="mx-auto max-w-6xl px-4 pt-14 sm:px-6">
+      <section id="livraison" className="mx-auto max-w-6xl scroll-mt-32 px-4 pt-14 sm:px-6">
         <h2 className="font-display text-2xl font-extrabold sm:text-3xl">Livraison partout à Dakar</h2>
         <p className="mt-1 text-mute">Depuis HLM Patte d&apos;Oie. Le prix dépend de votre quartier.</p>
         <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

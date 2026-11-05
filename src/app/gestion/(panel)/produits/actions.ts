@@ -23,6 +23,7 @@ const schema = z
     description: z.string().trim().max(2000),
     is_active: z.boolean(),
     is_online: z.boolean(),
+    featured: z.boolean(),
   })
   .refine((v) => v.promo_price == null || (v.price != null && v.promo_price < v.price), { message: "Le prix promo doit être inférieur au prix normal." })
   .refine((v) => !v.is_online || v.price != null, { message: "Saisissez un prix pour vendre ce produit en ligne." });
@@ -39,6 +40,7 @@ function read(fd: FormData) {
     description: fd.get("description") ?? "",
     is_active: fd.get("is_active") === "on",
     is_online: fd.get("is_online") === "on",
+    featured: fd.get("featured") === "on",
   });
 }
 
