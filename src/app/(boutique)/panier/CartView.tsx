@@ -13,7 +13,7 @@ export default function CartView() {
   if (!lines.length) {
     return (
       <div className="mt-8 flex flex-col items-center gap-5 rounded-[var(--radius-card)] bg-white p-8 text-center ring-1 ring-line sm:flex-row sm:text-left">
-        <Image src="/egeries/presente.webp" alt="" width={180} height={225} className="h-auto w-36" />
+        <Image src="/egeries/detoure/presente.webp" alt="" width={180} height={255} className="h-auto w-36" />
         <div className="space-y-3">
           <p className="font-display text-xl font-extrabold">Votre panier est vide</p>
           <p className="text-mute">Parcourez nos rayons : produits frais, épicerie, boissons, hygiène.</p>

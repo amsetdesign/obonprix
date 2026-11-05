@@ -29,13 +29,13 @@ export default async function Home() {
       {/* Haut de page : produits prioritaires (bloc 1), diaporama (bloc 2), rayons (bloc 3) */}
       <div className="mx-auto max-w-6xl space-y-5 px-4 pt-4 sm:px-6">
         <h1 className="sr-only">Ô Bon Prix, supérette en ligne à Dakar : vos courses livrées chez vous</h1>
-        <div className={`grid gap-4 lg:h-[360px] ${featured.length ? "lg:grid-cols-[300px_1fr]" : ""}`}>
+        <div className={`grid grid-cols-1 gap-4 lg:h-[380px] ${featured.length ? "lg:grid-cols-[300px_1fr]" : ""}`}>
           {featured.length > 0 && (
-            <div className="order-2 min-h-0 lg:order-1">
+            <div className="order-2 min-h-0 min-w-0 lg:order-1">
               <FeaturedColumn products={featured} rayonOf={(p) => catSlug.get(p.category_id ?? 0)} />
             </div>
           )}
-          <div className="order-1 aspect-[2/1] lg:order-2 lg:aspect-auto lg:h-full">
+          <div className="order-1 aspect-[16/11] min-w-0 sm:aspect-[2.4/1] lg:order-2 lg:aspect-auto lg:h-full">
             <HeroSlider minFee={minFee} promoCount={promoCount} />
           </div>
         </div>
@@ -63,7 +63,7 @@ export default async function Home() {
 
       {/* Comment ça marche */}
       <section aria-labelledby="comment" className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="grid overflow-hidden rounded-[28px] bg-red text-white md:grid-cols-[1.1fr_0.9fr]">
+        <div className="grid overflow-hidden rounded-[28px] bg-[radial-gradient(120%_120%_at_10%_10%,#e8242b_0%,#d1141b_50%,#a80f15_100%)] text-white md:grid-cols-[1.1fr_0.9fr]">
           <div className="p-7 sm:p-10 lg:p-12">
             <p className="text-xs font-bold tracking-[0.14em] text-sun uppercase">Comment ça marche</p>
             <h2 id="comment" className="mt-2 font-display text-3xl font-black sm:text-4xl">Vos courses en trois gestes</h2>
@@ -79,8 +79,9 @@ export default async function Home() {
               ))}
             </ol>
           </div>
-          <div className="relative min-h-72 bg-white">
-            <Image src="/egeries/telephone.webp" alt="Une cliente Ô Bon Prix commande sur son téléphone" fill sizes="(min-width: 768px) 45vw, 100vw" className="object-cover object-top" />
+          <div className="relative min-h-80 overflow-hidden">
+            <div className="absolute -bottom-[30%] left-1/2 aspect-square w-[90%] -translate-x-1/2 rounded-full bg-sun" aria-hidden />
+            <Image src="/egeries/detoure/telephone.webp" alt="Une cliente Ô Bon Prix commande sur son téléphone" fill sizes="(min-width: 768px) 45vw, 100vw" className="object-contain object-bottom pt-6" />
           </div>
         </div>
       </section>
@@ -116,8 +117,9 @@ export default async function Home() {
               <IconWhatsapp className="size-5" /> Rejoindre la chaîne
             </a>
           </div>
-          <div className="relative h-full min-h-64 bg-[#d7d5ed]">
-            <Image src="/egeries/duo.webp" alt="Deux clientes Ô Bon Prix regardent les promotions sur leur téléphone" fill sizes="(min-width: 768px) 40vw, 100vw" className="object-cover object-top" />
+          <div className="relative h-full min-h-72 overflow-hidden">
+            <div className="absolute -right-[10%] -bottom-[35%] aspect-square w-[95%] rounded-full bg-red" aria-hidden />
+            <Image src="/egeries/detoure/victoire.webp" alt="Une cliente Ô Bon Prix, bras levés, ravie d'une bonne affaire" fill sizes="(min-width: 768px) 40vw, 100vw" className="object-contain object-bottom pt-6" />
           </div>
         </div>
       </section>

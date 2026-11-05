@@ -26,7 +26,7 @@ export default async function ThanksPage() {
     <main className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-6">
       <ClearCart />
       <div className="flex items-center gap-5">
-        <Image src="/egeries/victoire.webp" alt="" width={140} height={175} className="hidden h-auto w-28 sm:block" />
+        <Image src="/egeries/detoure/victoire.webp" alt="" width={140} height={168} className="hidden h-auto w-28 sm:block" />
         <div>
           <p className="text-sm font-semibold text-leaf">Commande enregistrée</p>
           <h1 className="font-display text-3xl font-black">Merci ! Commande {order.number}</h1>
