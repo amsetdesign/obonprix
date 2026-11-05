@@ -26,9 +26,11 @@ export default async function Home() {
       {/* Haut de page : produits prioritaires (bloc 1), diaporama (bloc 2), rayons (bloc 3) */}
       <div className="mx-auto max-w-6xl space-y-4 px-4 pt-4 sm:px-6">
         <div className={`grid gap-4 lg:h-[360px] ${featured.length ? "lg:grid-cols-[300px_1fr]" : ""}`}>
-          <div className="order-2 min-h-0 lg:order-1">
-            <FeaturedColumn products={featured} rayonOf={(p) => catSlug.get(p.category_id ?? 0)} />
-          </div>
+          {featured.length > 0 && (
+            <div className="order-2 min-h-0 lg:order-1">
+              <FeaturedColumn products={featured} rayonOf={(p) => catSlug.get(p.category_id ?? 0)} />
+            </div>
+          )}
           <div className="order-1 aspect-[2/1] lg:order-2 lg:aspect-auto lg:h-full">
             <HeroSlider minFee={fcfa(minFee)} promoCount={promoCount} />
           </div>
