@@ -25,9 +25,9 @@ export default function FeaturedColumn({ products, rayonOf }: { products: ShopPr
                   {p.unit === "kg" && <span className="text-xs text-mute"> /kg</span>}
                 </p>
               </div>
-              <div className="w-[88px] shrink-0">
+              <div className="flex w-[104px] shrink-0 justify-end">
                 {p.in_stock ? (
-                  <AddToCart compact product={{ id: p.id, slug: p.slug, name: p.name, unit: p.unit, price, image_url: p.image_url }} />
+                  <AddToCart variant="round" product={{ id: p.id, slug: p.slug, name: p.name, unit: p.unit, price, image_url: p.image_url }} />
                 ) : (
                   <span className="block text-center text-xs text-mute">Épuisé</span>
                 )}

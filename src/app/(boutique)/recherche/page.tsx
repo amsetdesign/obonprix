@@ -13,7 +13,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       <h1 className="font-display text-2xl font-extrabold sm:text-3xl">{q.trim() ? `Résultats pour « ${q.trim()} »` : "Rechercher un produit"}</h1>
       {q.trim().length >= 2 && <p className="mt-1 text-sm text-mute">{results.length} produit{results.length > 1 ? "s" : ""}</p>}
       {results.length ? (
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
           {results.map((p) => <ProductCard key={p.id} p={p} rayon={catSlug.get(p.category_id ?? 0)} />)}
         </div>
       ) : q.trim().length >= 2 ? (

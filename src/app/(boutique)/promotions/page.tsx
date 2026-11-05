@@ -15,7 +15,7 @@ export default async function PromotionsPage() {
         <p className="text-sm text-ink/75">Prix barrés, dans la limite des stocks.</p>
       </header>
       {products.length ? (
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
           {products.map((p) => <ProductCard key={p.id} p={p} rayon={catSlug.get(p.category_id ?? 0)} />)}
         </div>
       ) : (

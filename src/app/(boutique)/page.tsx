@@ -1,30 +1,34 @@
 import Image from "next/image";
-import Link from "next/link";
 import { getCategories, getFeatured, getHighlights, getPromoCount, getZones } from "@/lib/shop";
 import { fcfa } from "@/lib/format";
 import FeaturedColumn from "@/components/shop/FeaturedColumn";
 import HeroSlider from "@/components/shop/HeroSlider";
 import ProductCard from "@/components/shop/ProductCard";
-import { RAYON_STYLE } from "@/components/shop/ProductThumb";
-import { IconArrow, IconPhone, IconTruck, IconWallet } from "@/components/icons";
+import Promises from "@/components/shop/Promises";
+import RayonCard from "@/components/shop/RayonCard";
+import SectionTitle from "@/components/shop/SectionTitle";
+import { IconPin, IconWhatsapp } from "@/components/icons";
 
 export const revalidate = 60;
 
+const WHATSAPP_CHANNEL = "https://whatsapp.com/channel/0029VbBRecV6LwHtEGzSvL02";
+
 const STEPS = [
-  { Icon: IconPhone, title: "Remplissez votre panier", text: "Choisissez vos produits sur le site, à la pièce ou au kilo." },
-  { Icon: IconWallet, title: "Payez par Wave ou Orange Money", text: "Vous recevez le montant exact et le numéro marchand Ô Bon Prix." },
-  { Icon: IconTruck, title: "On vous livre", text: "Partout à Dakar, par notre livreur ou par Yango." },
+  { title: "Remplissez votre panier", text: "Vos produits du quotidien, à la pièce ou au kilo." },
+  { title: "Payez par Wave ou Orange Money", text: "Le montant exact et le numéro marchand s'affichent à la commande." },
+  { title: "Recevez vos courses", text: "Partout à Dakar, par notre livreur ou par Yango." },
 ];
 
 export default async function Home() {
   const [categories, highlights, zones, featured, promoCount] = await Promise.all([getCategories(), getHighlights(10), getZones(), getFeatured(8), getPromoCount()]);
   const catSlug = new Map(categories.map((c) => [c.id, c.slug]));
-  const minFee = zones.length ? Math.min(...zones.map((z) => z.price)) : 1000;
+  const minFee = fcfa(zones.length ? Math.min(...zones.map((z) => z.price)) : 1000);
 
   return (
-    <main>
+    <main className="space-y-14 pb-4 sm:space-y-16">
       {/* Haut de page : produits prioritaires (bloc 1), diaporama (bloc 2), rayons (bloc 3) */}
-      <div className="mx-auto max-w-6xl space-y-4 px-4 pt-4 sm:px-6">
+      <div className="mx-auto max-w-6xl space-y-5 px-4 pt-4 sm:px-6">
+        <h1 className="sr-only">Ô Bon Prix, supérette en ligne à Dakar : vos courses livrées chez vous</h1>
         <div className={`grid gap-4 lg:h-[360px] ${featured.length ? "lg:grid-cols-[300px_1fr]" : ""}`}>
           {featured.length > 0 && (
             <div className="order-2 min-h-0 lg:order-1">
@@ -32,78 +36,90 @@ export default async function Home() {
             </div>
           )}
           <div className="order-1 aspect-[2/1] lg:order-2 lg:aspect-auto lg:h-full">
-            <HeroSlider minFee={fcfa(minFee)} promoCount={promoCount} />
+            <HeroSlider minFee={minFee} promoCount={promoCount} />
           </div>
         </div>
 
-        <h1 className="sr-only">Ô Bon Prix, supérette en ligne à Dakar : vos courses livrées chez vous</h1>
         <nav id="rayons" aria-label="Nos rayons" className="scroll-mt-32">
-          <ul className="flex gap-3 overflow-x-auto pb-1 lg:grid lg:grid-cols-6 lg:overflow-visible">
-            {categories.map((c) => {
-              const s = RAYON_STYLE[c.slug];
-              return (
-                <li key={c.slug} className="w-36 shrink-0 lg:w-auto">
-                  <Link href={`/rayons/${c.slug}`} className="group flex h-full flex-col justify-between gap-5 rounded-[var(--radius-card)] p-4 transition-transform hover:-translate-y-0.5" style={{ background: s?.tint, color: s?.ink }}>
-                    <span className="flex items-start justify-between">
-                      {s && <s.Icon className="size-8" />}
-                      <IconArrow className="size-4 opacity-50 transition-opacity group-hover:opacity-100" />
-                    </span>
-                    <span className="font-display text-[15px] leading-tight font-extrabold">{c.name}</span>
-                  </Link>
-                </li>
-              );
-            })}
+          <ul className="-mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0 lg:grid lg:grid-cols-6 lg:overflow-visible">
+            {categories.map((c) => (
+              <li key={c.slug} className="w-44 shrink-0 snap-start lg:w-auto"><RayonCard c={c} /></li>
+            ))}
           </ul>
         </nav>
+
+        <Promises minFee={minFee} />
       </div>
 
       {/* Sélection du moment */}
       {highlights.length > 0 && (
-        <section className="mx-auto max-w-6xl px-4 pt-12 sm:px-6">
-          <h2 className="font-display text-2xl font-extrabold sm:text-3xl">En ce moment</h2>
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <section aria-labelledby="moment" className="mx-auto max-w-6xl px-4 sm:px-6">
+          <SectionTitle id="moment" eyebrow="Sélection" title="En ce moment" href={promoCount > 0 ? "/promotions" : undefined} linkLabel="Toutes les promos" />
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
             {highlights.map((p) => <ProductCard key={p.id} p={p} rayon={catSlug.get(p.category_id ?? 0)} />)}
           </div>
         </section>
       )}
 
       {/* Comment ça marche */}
-      <section className="mx-auto mt-14 max-w-6xl px-4 sm:px-6">
-        <div className="grid items-center overflow-hidden rounded-[28px] bg-red text-white md:grid-cols-[1fr_0.8fr]">
-          <div className="space-y-6 p-7 sm:p-10">
-            <h2 className="font-display text-3xl font-black sm:text-4xl">Commander, c&apos;est simple</h2>
-            <ol className="space-y-5">
-              {STEPS.map(({ Icon, title, text }, i) => (
+      <section aria-labelledby="comment" className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="grid overflow-hidden rounded-[28px] bg-red text-white md:grid-cols-[1.1fr_0.9fr]">
+          <div className="p-7 sm:p-10 lg:p-12">
+            <p className="text-xs font-bold tracking-[0.14em] text-sun uppercase">Comment ça marche</p>
+            <h2 id="comment" className="mt-2 font-display text-3xl font-black sm:text-4xl">Vos courses en trois gestes</h2>
+            <ol className="mt-8 space-y-6">
+              {STEPS.map(({ title, text }, i) => (
                 <li key={title} className="flex gap-4">
-                  <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-sun text-ink"><Icon className="size-5" /></span>
+                  <span className="font-display text-4xl leading-none font-black text-sun tabular">{i + 1}</span>
                   <span>
-                    <span className="block font-display text-lg font-extrabold">{i + 1}. {title}</span>
-                    <span className="text-white/85">{text}</span>
+                    <span className="block font-display text-lg font-extrabold">{title}</span>
+                    <span className="text-white/80">{text}</span>
                   </span>
                 </li>
               ))}
             </ol>
           </div>
-          <div className="self-stretch bg-white">
-            <Image src="/egeries/telephone.webp" alt="Une cliente commande sur son téléphone" width={1100} height={828} sizes="(min-width: 768px) 40vw, 100vw" className="h-full w-full object-cover" />
+          <div className="relative min-h-72 bg-white">
+            <Image src="/egeries/telephone.webp" alt="Une cliente Ô Bon Prix commande sur son téléphone" fill sizes="(min-width: 768px) 45vw, 100vw" className="object-cover object-top" />
           </div>
         </div>
       </section>
 
       {/* Livraison */}
-      <section id="livraison" className="mx-auto max-w-6xl scroll-mt-32 px-4 pt-14 sm:px-6">
-        <h2 className="font-display text-2xl font-extrabold sm:text-3xl">Livraison partout à Dakar</h2>
-        <p className="mt-1 text-mute">Depuis HLM Patte d&apos;Oie. Le prix dépend de votre quartier.</p>
+      <section id="livraison" aria-labelledby="livraison-titre" className="mx-auto max-w-6xl scroll-mt-32 px-4 sm:px-6">
+        <SectionTitle id="livraison-titre" eyebrow="Livraison" title="Partout à Dakar" />
+        <p className="mt-2 flex items-center gap-1.5 text-mute"><IconPin className="size-4 text-red" /> Départ HLM Patte d&apos;Oie. Le prix dépend de votre quartier.</p>
         <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {zones.map((z) => (
-            <li key={z.id} className="card p-5">
-              <p className="font-display text-2xl font-black text-red tabular">{fcfa(z.price)}</p>
-              <p className="mt-1 text-sm font-semibold">{z.name}</p>
-              <p className="mt-2 text-sm text-mute">{z.areas.join(", ")}</p>
+            <li key={z.id} className="rounded-2xl bg-white p-5 ring-1 ring-line">
+              <div className="flex items-baseline justify-between gap-2">
+                <p className="text-sm font-bold">{z.name}</p>
+                <p className="font-display text-xl font-black text-red tabular">{fcfa(z.price)}</p>
+              </div>
+              <p className="mt-3 text-sm leading-relaxed text-mute">{z.areas.join(" · ")}</p>
             </li>
           ))}
         </ul>
-        <p className="mt-3 rounded-xl bg-sun-100 px-4 py-3 text-sm">Ailleurs, ou si vous préférez : livraison <strong>Yango</strong>, la course est payée directement au livreur.</p>
+        <p className="mt-3 rounded-2xl bg-sun-100 px-5 py-4 text-sm">
+          <strong>Hors de ces quartiers ?</strong> Choisissez la livraison Yango à la commande : la course est payée directement au livreur.
+        </p>
+      </section>
+
+      {/* Chaîne WhatsApp */}
+      <section className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="grid items-center overflow-hidden rounded-[28px] bg-ink text-white md:grid-cols-[1fr_0.8fr]">
+          <div className="space-y-4 p-7 sm:p-10">
+            <p className="text-xs font-bold tracking-[0.14em] text-sun uppercase">Bons plans</p>
+            <h2 className="font-display text-3xl font-black">Ne ratez plus une promo</h2>
+            <p className="max-w-md text-white/75">Arrivages, prix cassés, nouveautés : rejoignez la chaîne WhatsApp Ô Bon Prix.</p>
+            <a href={WHATSAPP_CHANNEL} target="_blank" rel="noopener noreferrer" className="btn min-h-12 bg-[#1f9d55] px-6 text-base text-white hover:bg-[#17864a]">
+              <IconWhatsapp className="size-5" /> Rejoindre la chaîne
+            </a>
+          </div>
+          <div className="relative h-full min-h-64 bg-[#d7d5ed]">
+            <Image src="/egeries/duo.webp" alt="Deux clientes Ô Bon Prix regardent les promotions sur leur téléphone" fill sizes="(min-width: 768px) 40vw, 100vw" className="object-cover object-top" />
+          </div>
+        </div>
       </section>
     </main>
   );

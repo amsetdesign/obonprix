@@ -53,7 +53,7 @@ export default async function ProductPage({ params }: { params: Params }) {
       {others.length > 0 && (
         <section className="mt-14">
           <h2 className="font-display text-xl font-extrabold">Dans le même rayon</h2>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
             {others.map((o) => <ProductCard key={o.id} p={o} rayon={cat?.slug} />)}
           </div>
         </section>
