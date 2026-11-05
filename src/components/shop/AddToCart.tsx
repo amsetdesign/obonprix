@@ -35,7 +35,7 @@ export default function AddToCart({ product, variant = "full", large }: Props) {
   const step = stepOf(product.unit);
   const btn = round ? "w-9" : "w-11";
   return (
-    <div className={`flex items-center justify-between rounded-full bg-red text-white ${h} w-full`}>
+    <div className={`flex items-center justify-between rounded-full bg-red text-white ${h} ${round ? "w-full min-w-[104px]" : "w-full"}`}>
       <button type="button" onClick={() => setQty(product.id, line.qty - step)} className={`flex h-full ${btn} items-center justify-center rounded-l-full hover:bg-red-700`} aria-label={`Retirer ${product.unit === "kg" ? "un demi-kilo" : "un"}`}>
         <IconMinus className="size-4" />
       </button>

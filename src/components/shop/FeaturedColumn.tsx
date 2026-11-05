@@ -14,7 +14,7 @@ export default function FeaturedColumn({ products, rayonOf }: { products: ShopPr
         {products.map((p) => {
           const price = p.promo_price ?? p.price;
           return (
-            <li key={p.id} className="flex w-60 shrink-0 items-center gap-3 rounded-xl border border-line p-2.5 lg:w-auto lg:rounded-none lg:border-0 lg:px-3.5 lg:py-2.5">
+            <li key={p.id} className="flex w-64 shrink-0 items-center gap-3 rounded-xl border border-line p-2.5 lg:w-auto lg:rounded-none lg:border-0 lg:px-3.5 lg:py-2.5">
               <Link href={`/produits/${p.slug}`} className="shrink-0" tabIndex={-1} aria-hidden>
                 <ProductThumb name="" image={p.image_url} rayon={rayonOf(p)} sizes="56px" className="size-14 rounded-lg" />
               </Link>
@@ -25,7 +25,7 @@ export default function FeaturedColumn({ products, rayonOf }: { products: ShopPr
                   {p.unit === "kg" && <span className="text-xs text-mute"> /kg</span>}
                 </p>
               </div>
-              <div className="flex w-[104px] shrink-0 justify-end">
+              <div className="flex shrink-0 justify-end">
                 {p.in_stock ? (
                   <AddToCart variant="round" product={{ id: p.id, slug: p.slug, name: p.name, unit: p.unit, price, image_url: p.image_url }} />
                 ) : (
