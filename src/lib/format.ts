@@ -1,12 +1,15 @@
 const fcfaFmt = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
 const qtyFmt = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 3 });
+const NBSP = String.fromCharCode(0xa0);
+const NARROW_NBSP = new RegExp(String.fromCharCode(0x202f), "g");
+const ANY_NBSP = new RegExp(`[${String.fromCharCode(0x202f)}${NBSP}]`, "g");
 
-/** 12500 -> « 12 500 F » */
-export const fcfa = (n: number | null | undefined) => (n == null ? "—" : `${fcfaFmt.format(n).replace(/ | /g, " ")} F`);
+/** 12500 -> « 12 500 F » (espaces insécables : un prix ne se coupe jamais en fin de ligne) */
+export const fcfa = (n: number | null | undefined) => (n == null ? "—" : `${fcfaFmt.format(n).replace(NARROW_NBSP, NBSP)}${NBSP}F`);
 
 /** Quantité avec son unité : « 3 » ou « 2,5 kg » */
 export const qty = (n: number | string, unit: string) => {
-  const v = qtyFmt.format(Number(n)).replace(/ | /g, " ");
+  const v = qtyFmt.format(Number(n)).replace(ANY_NBSP, " ");
   return unit === "kg" ? `${v} kg` : v;
 };
 
