@@ -2,13 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Category, StoreSettings } from "@/lib/shop";
 import { hoursLines } from "@/lib/shop";
-import { IconInstagram, IconTiktok, IconWhatsapp } from "@/components/icons";
+import { IconFacebook, IconInstagram, IconTiktok, IconWhatsapp } from "@/components/icons";
 
-// Facebook : lien de la page à ajouter dès qu'on l'a
+// Comptes officiels (repris du Linktree linktr.ee/OBonPrixsn)
 const SOCIALS = [
-  { href: "https://www.instagram.com/o_bon_prix", label: "Instagram", Icon: IconInstagram },
-  { href: "https://www.tiktok.com/@o_bon_prix", label: "TikTok", Icon: IconTiktok },
+  { href: "https://www.facebook.com/obonprixsn", label: "Facebook", Icon: IconFacebook },
+  { href: "https://www.instagram.com/o_bon_prix_sn", label: "Instagram", Icon: IconInstagram },
+  { href: "https://www.tiktok.com/@o.bon.prix.sn", label: "TikTok", Icon: IconTiktok },
 ];
+const WHATSAPP_CHANNEL = "https://whatsapp.com/channel/0029VbBRecV6LwHtEGzSvL02";
 
 export default function Footer({ categories, settings }: { categories: Category[]; settings: StoreSettings | null }) {
   const phone = settings?.phone ?? "+221 78 737 82 90";
@@ -30,6 +32,9 @@ export default function Footer({ categories, settings }: { categories: Category[
               </li>
             ))}
           </ul>
+          <a href={WHATSAPP_CHANNEL} target="_blank" rel="noopener noreferrer" className="inline-block text-sm text-white/80 underline underline-offset-4 hover:text-white">
+            Suivre nos promos sur la chaîne WhatsApp
+          </a>
         </div>
         <div>
           <h2 className="font-display text-sm font-extrabold uppercase tracking-wider text-sun">Rayons</h2>
