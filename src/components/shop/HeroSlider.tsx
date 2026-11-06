@@ -3,9 +3,23 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { IconArrow } from "@/components/icons";
+import { IconArrow, IconCheck } from "@/components/icons";
+import { fcfa } from "@/lib/format";
+import AddToCart from "./AddToCart";
 
-type Props = { minFee: string; promoCount: number };
+export type SliderPack = {
+  id: string; slug: string; name: string; price: number; value: number | null; in_stock: boolean; image_url: string;
+  items: { name: string; qty: number; unit: string }[]; endsLabel: string | null;
+};
+type Props = { minFee: string; promoCount: number; pack?: SliderPack | null };
+
+/** « 2 kg de cuisses de poulet », « 500 g de blancs de poulet » */
+const portion = (i: { name: string; qty: number; unit: string }) => {
+  const name = i.name.replace(/\s*\(au kg\)\s*/i, "").replace(/^./, (c) => c.toLowerCase());
+  if (i.unit !== "kg") return `${i.qty} × ${name}`;
+  const q = i.qty < 1 ? `${Math.round(i.qty * 1000)} g` : `${String(i.qty).replace(".", ",")} kg`;
+  return `${q} de ${name}`;
+};
 
 // Rayons de l'affiche officielle, recomposée en HTML pour rester lisible sur téléphone
 const POSTER_RAYONS = [
@@ -29,8 +43,45 @@ const Model = ({ src, alt, className = "" }: { src: string; alt: string; classNa
 );
 
 /** Diaporama de l'accueil : bannières aux couleurs de la marque, égéries détourées */
-export default function HeroSlider({ minFee, promoCount }: Props) {
+export default function HeroSlider({ minFee, promoCount, pack }: Props) {
+  const packSlide = pack ? (
+    // 0. Pack Anniversaire : 1 an d'Ô Bon Prix
+    <div key="pack" className="relative size-full overflow-hidden bg-[radial-gradient(130%_130%_at_85%_60%,#ef3a40_0%,#d1141b_40%,#8f0b10_100%)] text-white">
+      <div className="absolute top-[8%] right-[4%] flex aspect-square w-[17%] max-w-28 rotate-[-10deg] flex-col items-center justify-center rounded-full bg-sun text-ink shadow-xl sm:top-[10%] sm:right-[6%]" aria-hidden>
+        <span className="font-display text-[clamp(18px,4vw,40px)] leading-none font-black">1 an</span>
+        <span className="text-[clamp(7px,1vw,11px)] font-bold tracking-wide uppercase">2 nov. 2026</span>
+      </div>
+      <div className="pointer-events-none absolute right-[-4%] bottom-[-2%] h-[78%] w-[62%] sm:right-[2%] sm:w-[52%]">
+        <Image src={pack.image_url || "/egeries/detoure/pack-poulet.webp"} alt="Panier de cuisses, pilons, ailes et blancs de poulet" fill sizes="(min-width: 1024px) 480px, 60vw" className="object-contain object-bottom drop-shadow-2xl [mask-image:linear-gradient(to_bottom,black_85%,transparent)]" />
+      </div>
+      <div className="relative z-10 flex h-full max-w-[60%] flex-col justify-center gap-1.5 p-5 sm:max-w-[52%] sm:gap-3 sm:p-10">
+        <Eyebrow className="text-sun">1 an déjà · merci Dakar</Eyebrow>
+        <p className="font-display text-[24px] leading-none font-black sm:text-[46px]">{pack.name}</p>
+        <ul className="hidden space-y-0.5 text-sm text-white/90 sm:block">
+          {pack.items.map((i) => <li key={i.name} className="flex items-center gap-2"><IconCheck className="size-4 text-sun" />{portion(i)}</li>)}
+        </ul>
+        <p className="text-xs text-white/85 sm:hidden">{pack.items.map((i) => i.name.replace(/\s*\(au kg\)\s*/i, "").replace(/ de poulet/i, "")).join(", ")}</p>
+        <div className="flex flex-wrap items-baseline gap-x-3">
+          <span className="font-display text-[26px] font-black text-sun tabular sm:text-5xl">{fcfa(pack.price)}</span>
+          {pack.value != null && pack.value > pack.price && <span className="text-xs text-white/75 line-through tabular sm:text-sm">{fcfa(pack.value)}</span>}
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="w-44 sm:w-52">
+            {pack.in_stock ? (
+              <AddToCart product={{ id: pack.id, slug: pack.slug, name: pack.name, unit: "piece", price: pack.price, image_url: pack.image_url }} />
+            ) : (
+              <span className="flex h-11 items-center justify-center rounded-xl bg-white/15 text-sm font-semibold">Victime de son succès</span>
+            )}
+          </div>
+          <Link href={`/produits/${pack.slug}`} className="hidden text-sm font-semibold text-white underline underline-offset-4 sm:inline">Détails</Link>
+        </div>
+        {pack.endsLabel && <p className="text-[10px] text-white/75 sm:text-xs">{pack.endsLabel}</p>}
+      </div>
+    </div>
+  ) : null;
+
   const slides = [
+    ...(packSlide ? [packSlide] : []),
     // 1. Accueil : jaune « Superette », égérie au panier
     <div key="accueil" className="relative size-full overflow-hidden bg-sun">
       <div className="absolute -right-[10%] -bottom-[45%] aspect-square w-[70%] rounded-full bg-white/35" aria-hidden />

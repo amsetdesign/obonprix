@@ -25,6 +25,8 @@ const schema = z
     is_active: z.boolean(),
     is_online: z.boolean(),
     featured: z.boolean(),
+    supplier_id: z.number().int().positive().nullable(),
+    sale_ends_at: z.string().nullable(),
   })
   .refine((v) => v.promo_price == null || (v.price != null && v.promo_price < v.price), { message: "Le prix promo doit être inférieur au prix normal." })
   .refine((v) => !v.is_online || v.price != null, { message: "Saisissez un prix pour vendre ce produit en ligne." });
@@ -42,7 +44,16 @@ function read(fd: FormData) {
     is_active: fd.get("is_active") === "on",
     is_online: fd.get("is_online") === "on",
     featured: fd.get("featured") === "on",
+    supplier_id: parseNum(fd.get("supplier_id")),
+    sale_ends_at: endOfOffer(fd.get("sale_ends_on")),
   });
+}
+
+/** Dernier jour de l'offre (AAAA-MM-JJ) -> fin exclusive : minuit du lendemain à Dakar (UTC) */
+function endOfOffer(v: FormDataEntryValue | null) {
+  const s = String(v ?? "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+  return new Date(new Date(`${s}T00:00:00Z`).getTime() + 86_400_000).toISOString();
 }
 
 /** Envoie la photo dans l'espace « produits » ; renvoie son adresse publique, ou une erreur lisible. */
@@ -103,9 +114,10 @@ export async function createProduct(_prev: ProductState, fd: FormData): Promise<
   const initial = parseNum(fd.get("initial_stock")) ?? 0;
   if (initial < 0 || (v.unit === "piece" && !Number.isInteger(initial))) return { error: "Stock de départ invalide." };
 
+  const kind = fd.get("kind") === "pack" ? "pack" : "simple";
   const { data, error } = await supabase
     .from("products")
-    .insert({ ...v, barcode: v.barcode || null, slug: slugify(v.name) })
+    .insert({ ...v, kind, unit: kind === "pack" ? "piece" : v.unit, stock_alert: kind === "pack" ? 0 : v.stock_alert, barcode: v.barcode || null, slug: slugify(v.name) })
     .select("id")
     .single();
   if (error || !data) return { error: dbError(error?.message ?? "") };
@@ -116,7 +128,7 @@ export async function createProduct(_prev: ProductState, fd: FormData): Promise<
     if (up.url) await supabase.from("products").update({ image_url: up.url }).eq("id", data.id);
   }
   if (cost != null) await writeCost(supabase, data.id, userId, cost);
-  if (initial > 0) {
+  if (initial > 0 && kind === "simple") {
     await supabase.from("stock_movements").insert({ product_id: data.id, delta: initial, reason: "achat", note: "Stock de départ", created_by: userId });
   }
   revalidatePath("/gestion/produits");

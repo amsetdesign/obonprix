@@ -10,7 +10,7 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
   const { supabase } = await requireStaff(["gerant", "stock"]);
   const { produit = "" } = await searchParams;
   const [{ data: products }, { data: cats }, { data: moves }] = await Promise.all([
-    supabase.from("products").select("id, name, unit, stock, category_id").eq("is_active", true).order("name"),
+    supabase.from("products").select("id, name, unit, stock, category_id").eq("is_active", true).eq("kind", "simple").order("name"),
     supabase.from("categories").select("id, name"),
     supabase
       .from("stock_movements")

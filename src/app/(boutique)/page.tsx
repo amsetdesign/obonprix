@@ -1,6 +1,6 @@
 import Image from "next/image";
-import { getCategories, getFeatured, getHighlights, getPromoCount, getZones } from "@/lib/shop";
-import { fcfa } from "@/lib/format";
+import { getActivePacks, getCategories, getFeatured, getHighlights, getPromoCount, getZones } from "@/lib/shop";
+import { fcfa, offerEnds } from "@/lib/format";
 import FeaturedColumn from "@/components/shop/FeaturedColumn";
 import HeroSlider from "@/components/shop/HeroSlider";
 import ProductCard from "@/components/shop/ProductCard";
@@ -20,7 +20,8 @@ const STEPS = [
 ];
 
 export default async function Home() {
-  const [categories, highlights, zones, featured, promoCount] = await Promise.all([getCategories(), getHighlights(10), getZones(), getFeatured(8), getPromoCount()]);
+  const [categories, highlights, zones, featured, promoCount, packs] = await Promise.all([getCategories(), getHighlights(10), getZones(), getFeatured(8), getPromoCount(), getActivePacks()]);
+  const pack = packs[0];
   const catSlug = new Map(categories.map((c) => [c.id, c.slug]));
   const minFee = fcfa(zones.length ? Math.min(...zones.map((z) => z.price)) : 1000);
 
@@ -36,7 +37,11 @@ export default async function Home() {
             </div>
           )}
           <div className="order-1 aspect-[16/11] min-w-0 sm:aspect-[2.4/1] lg:order-2 lg:aspect-auto lg:h-full">
-            <HeroSlider minFee={minFee} promoCount={promoCount} />
+            <HeroSlider
+              minFee={minFee}
+              promoCount={promoCount}
+              pack={pack ? { id: pack.id, slug: pack.slug, name: pack.name, price: pack.promo_price ?? pack.price, value: pack.value, in_stock: pack.in_stock, image_url: pack.image_url, items: pack.items, endsLabel: offerEnds(pack.sale_ends_at) } : null}
+            />
           </div>
         </div>
 

@@ -8,6 +8,12 @@ export type ShopProduct = {
   id: string; slug: string; name: string; unit: "piece" | "kg";
   price: number; promo_price: number | null; in_stock: boolean;
   image_url: string; description: string; category_id: number | null;
+  kind: "simple" | "pack"; sale_ends_at: string | null;
+};
+export type PackDetail = ShopProduct & {
+  items: { name: string; slug: string; unit: string; qty: number; price: number | null }[];
+  /** valeur des composants au prix normal, si tous ont un prix */
+  value: number | null;
 };
 export type Zone = { id: number; name: string; price: number; areas: string[] };
 export type StoreSettings = {
@@ -15,14 +21,16 @@ export type StoreSettings = {
   hours: Record<string, [string, string] | null>; accepting_orders: boolean; min_order: number; free_delivery_from: number | null;
 };
 
-const COLS = "id, slug, name, unit, price, promo_price, stock, image_url, description, category_id";
+const COLS = "id, slug, name, unit, price, promo_price, stock, image_url, description, category_id, kind, sale_ends_at";
 
 type Row = Omit<ShopProduct, "in_stock"> & { stock: number | string };
 // le stock exact reste interne : la boutique affiche seulement « disponible » ou « épuisé »
 const toShop = ({ stock, ...p }: Row): ShopProduct => ({ ...p, in_stock: Number(stock) > 0 });
 
-/** Produits vendables en ligne : actifs, en ligne et avec un prix */
-const online = () => publicClient().from("products").select(COLS).eq("is_active", true).eq("is_online", true).not("price", "is", null);
+/** Produits vendables en ligne : actifs, en ligne, avec un prix, et dont l'offre n'est pas terminée */
+const online = () =>
+  publicClient().from("products").select(COLS).eq("is_active", true).eq("is_online", true).not("price", "is", null)
+    .or(`sale_ends_at.is.null,sale_ends_at.gt.${new Date().toISOString()}`);
 
 export const getCategories = cache(async (): Promise<Category[]> => {
   if (!hasSupabase) return [];
@@ -128,4 +136,24 @@ export function hoursLines(hours: StoreSettings["hours"]) {
     i = j + 1;
   }
   return lines;
+}
+
+/** Composition d'un pack et valeur de ses composants (pour afficher l'économie) */
+export async function getPackDetail(p: ShopProduct): Promise<PackDetail> {
+  const { data } = await publicClient().from("pack_items").select("qty, products!pack_items_product_id_fkey(name, slug, unit, price, promo_price)").eq("pack_id", p.id);
+  type Comp = { name: string; slug: string; unit: string; price: number | null; promo_price: number | null };
+  const items = (data ?? []).map((r) => {
+    const c = r.products as unknown as Comp;
+    return { name: c.name, slug: c.slug, unit: c.unit, qty: Number(r.qty), price: c.price };
+  }).sort((a, b) => b.qty - a.qty);
+  const value = items.length && items.every((i) => i.price != null) ? Math.round(items.reduce((n, i) => n + (i.price as number) * i.qty, 0)) : null;
+  return { ...p, items, value };
+}
+
+/** Packs en cours (mis en avant sur l'accueil), disponibles d'abord */
+export async function getActivePacks() {
+  if (!hasSupabase) return [];
+  const { data } = await online().eq("kind", "pack").limit(5);
+  const packs = sortProducts((data ?? []).map(toShop));
+  return Promise.all(packs.map(getPackDetail));
 }

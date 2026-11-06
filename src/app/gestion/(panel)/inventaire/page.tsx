@@ -11,7 +11,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
   const { rayon } = await searchParams;
   const cat = (cats ?? []).find((c) => c.slug === rayon) ?? cats?.[0];
   const { data: products } = cat
-    ? await supabase.from("products").select("id, name, unit, stock").eq("category_id", cat.id).eq("is_active", true).order("name")
+    ? await supabase.from("products").select("id, name, unit, stock").eq("category_id", cat.id).eq("is_active", true).eq("kind", "simple").order("name")
     : { data: [] };
 
   return (

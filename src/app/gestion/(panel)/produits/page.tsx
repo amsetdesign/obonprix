@@ -12,6 +12,7 @@ const FILTERS = [
   { key: "bas", label: "Stock bas" },
   { key: "sans-prix", label: "Sans prix" },
   { key: "promo", label: "En promo" },
+  { key: "packs", label: "Packs" },
   { key: "hors-ligne", label: "Pas en ligne" },
   { key: "inactifs", label: "Désactivés" },
 ];
@@ -25,7 +26,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: SP 
   const { q = "", rayon = "", filtre = "" } = await searchParams;
   const [{ data: cats }, { data: products }] = await Promise.all([
     supabase.from("categories").select("id, slug, name").order("position"),
-    supabase.from("products").select("id, name, unit, price, promo_price, stock, stock_alert, barcode, image_url, is_active, is_online, category_id").order("name"),
+    supabase.from("products").select("id, name, unit, price, promo_price, stock, stock_alert, barcode, image_url, is_active, is_online, category_id, kind").order("name"),
   ]);
   const catBy = new Map((cats ?? []).map((c) => [c.id, c]));
   const needle = plain(q.trim());
@@ -36,9 +37,10 @@ export default async function ProductsPage({ searchParams }: { searchParams: SP 
     const s = Number(p.stock);
     switch (filtre) {
       case "rupture": return p.is_active && s <= 0;
-      case "bas": return p.is_active && s > 0 && s <= Number(p.stock_alert);
+      case "bas": return p.is_active && p.kind === "simple" && s > 0 && s < Number(p.stock_alert);
       case "sans-prix": return p.price == null;
       case "promo": return p.promo_price != null;
+      case "packs": return p.kind === "pack";
       case "hors-ligne": return p.is_active && !p.is_online;
       case "inactifs": return !p.is_active;
       default: return true;
@@ -95,7 +97,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: SP 
           <tbody className="divide-y divide-line">
             {list.map((p) => {
               const s = Number(p.stock);
-              const stockTone = s <= 0 ? "text-red font-semibold" : s <= Number(p.stock_alert) ? "text-[#a06d00] font-semibold" : "";
+              const stockTone = s <= 0 ? "text-red font-semibold" : s < Number(p.stock_alert) ? "text-[#a06d00] font-semibold" : "";
               return (
                 <tr key={p.id} className={p.is_active ? "" : "opacity-55"}>
                   <td className="px-4 py-2.5">
@@ -106,7 +108,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: SP 
                           <img src={p.image_url} alt="" className="size-full object-contain" loading="lazy" />
                         ) : <span className="text-xs font-bold text-mute">{p.name.slice(0, 1)}</span>}
                       </span>
-                      <span className="font-medium">{p.name}</span>
+                      <span className="font-medium">{p.name}</span>{p.kind === "pack" && <span className="pill bg-red text-white">Pack</span>}
                     </Link>
                   </td>
                   <td className="px-4 py-2.5 text-mute">{catBy.get(p.category_id)?.name ?? "—"}</td>

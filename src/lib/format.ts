@@ -45,3 +45,10 @@ export const MOVEMENT_LABEL: Record<string, string> = {
   vente_en_ligne: "Commande en ligne",
   annulation: "Annulation",
 };
+
+/** Fin d'offre (date exclusive, minuit UTC = minuit à Dakar) -> « Offre valable jusqu'au 30 novembre » */
+export function offerEnds(iso: string | null) {
+  if (!iso) return null;
+  const last = new Date(new Date(iso).getTime() - 1);
+  return `Offre valable jusqu'au ${new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", timeZone: "Africa/Dakar" }).format(last)}`;
+}

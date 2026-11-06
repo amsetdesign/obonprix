@@ -11,6 +11,7 @@ export default function ProductCard({ p, rayon }: { p: ShopProduct; rayon?: stri
     <article className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-line transition-shadow hover:shadow-[0_12px_32px_-16px_rgba(27,23,22,0.28)] ${p.in_stock ? "" : "opacity-70"}`}>
       <Link href={`/produits/${p.slug}`} className="relative block" tabIndex={-1} aria-hidden>
         <ProductThumb name="" image={p.image_url} rayon={rayon} sizes="(min-width: 1024px) 220px, 45vw" className="aspect-[5/4] transition-transform duration-300 group-hover:scale-[1.03]" />
+        {p.kind === "pack" && <span className="absolute top-2.5 right-2.5 rounded-md bg-red px-2 py-0.5 text-xs font-extrabold text-white">Pack</span>}
         {off > 0 && <span className="absolute top-2.5 left-2.5 rounded-md bg-sun px-2 py-0.5 text-xs font-extrabold text-ink tabular">-{off}%</span>}
         {!p.in_stock && <span className="absolute top-2.5 left-2.5 rounded-md bg-ink px-2 py-0.5 text-xs font-semibold text-white">Épuisé</span>}
       </Link>

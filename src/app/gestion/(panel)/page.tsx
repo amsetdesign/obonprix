@@ -7,7 +7,7 @@ export default async function Dashboard() {
   const { supabase, name, role } = await requireStaff();
   const { data: products } = await supabase
     .from("products")
-    .select("id, name, unit, stock, stock_alert, price, is_active, is_online")
+    .select("id, name, unit, stock, stock_alert, price, is_active, is_online, kind")
     .order("name");
   const list = products ?? [];
   // chiffres du jour (gérant) et valeur du stock au prix d'achat (gérant, stock)
@@ -20,13 +20,13 @@ export default async function Dashboard() {
   const sv = stockVal as { value: number; products_without_cost: number } | null;
   const active = list.filter((p) => p.is_active);
   const out = active.filter((p) => Number(p.stock) <= 0);
-  const low = active.filter((p) => Number(p.stock) > 0 && Number(p.stock) <= Number(p.stock_alert));
+  const low = active.filter((p) => p.kind === "simple" && Number(p.stock) > 0 && Number(p.stock) < Number(p.stock_alert));
   const noPrice = active.filter((p) => p.price == null);
 
   const tiles = [
     { label: "Produits actifs", value: active.length, href: "/gestion/produits" },
     { label: "En rupture", value: out.length, href: "/gestion/produits?filtre=rupture", tone: out.length ? "text-red" : "" },
-    { label: "Stock bas", value: low.length, href: "/gestion/produits?filtre=bas", tone: low.length ? "text-[#a06d00]" : "" },
+    { label: "À réapprovisionner", value: low.length + out.filter((p) => p.kind === "simple").length, href: "/gestion/reappro", tone: low.length ? "text-[#a06d00]" : "" },
     { label: "Sans prix", value: noPrice.length, href: "/gestion/produits?filtre=sans-prix", tone: noPrice.length ? "text-[#a06d00]" : "" },
   ];
 

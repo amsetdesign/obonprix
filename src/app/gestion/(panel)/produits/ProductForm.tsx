@@ -17,22 +17,31 @@ export type ProductValues = {
   featured?: boolean;
   cost_price?: number | null;
   image_url: string;
+  kind?: string;
+  supplier_id?: number | null;
+  sale_ends_at?: string | null;
 };
 
 type Props = {
   action: (prev: ProductState, fd: FormData) => Promise<ProductState>;
   categories: { id: number; name: string }[];
+  suppliers?: { id: number; name: string }[];
   initial?: ProductValues;
   isNew?: boolean;
 };
 
 const EMPTY: ProductValues = {
-  name: "", category_id: null, unit: "piece", price: null, promo_price: null, stock_alert: 0,
+  name: "", category_id: null, unit: "piece", price: null, promo_price: null, stock_alert: 5,
   barcode: "", description: "", is_active: true, is_online: true, image_url: "",
 };
 
-export default function ProductForm({ action, categories, initial = EMPTY, isNew }: Props) {
+/** Fin exclusive (minuit du lendemain) -> dernier jour de l'offre pour le champ date */
+const lastDay = (iso?: string | null) => (iso ? new Date(new Date(iso).getTime() - 1).toISOString().slice(0, 10) : "");
+
+export default function ProductForm({ action, categories, suppliers = [], initial = EMPTY, isNew }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
+  const [kind, setKind] = useState(initial.kind ?? "simple");
+  const isPack = kind === "pack";
   const [unit, setUnit] = useState(initial.unit);
   const [price, setPrice] = useState(initial.price != null ? String(initial.price) : "");
   const [promo, setPromo] = useState(initial.promo_price != null ? String(initial.promo_price) : "");
@@ -48,8 +57,22 @@ export default function ProductForm({ action, categories, initial = EMPTY, isNew
     <form action={formAction} className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-[1fr_260px]">
         <div className="card space-y-5 p-5">
+          {isNew && (
+            <fieldset>
+              <legend className="label">Type</legend>
+              <div className="grid grid-cols-2 gap-2 sm:w-2/3">
+                {[["simple", "Produit", "Un article du rayon"], ["pack", "Pack", "Plusieurs produits vendus ensemble"]].map(([v, l, h]) => (
+                  <label key={v} className={`cursor-pointer rounded-xl border px-3 py-2.5 ${kind === v ? "border-red bg-red-50" : "border-line bg-white"}`}>
+                    <input type="radio" name="kind" value={v} checked={kind === v} onChange={() => { setKind(v); if (v === "pack") setUnit("piece"); }} className="sr-only" />
+                    <span className={`block text-sm font-semibold ${kind === v ? "text-red" : ""}`}>{l}</span>
+                    <span className="block text-xs text-mute">{h}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          )}
           <div>
-            <label htmlFor="name" className="label">Nom du produit</label>
+            <label htmlFor="name" className="label">Nom {isPack ? "du pack" : "du produit"}</label>
             <input id="name" name="name" required maxLength={120} defaultValue={initial.name} className="field" placeholder="Ex. Huile Zita 1 L" />
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
@@ -60,7 +83,7 @@ export default function ProductForm({ action, categories, initial = EMPTY, isNew
                 {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
-            <fieldset>
+            {isPack ? <input type="hidden" name="unit" value="piece" /> : <fieldset>
               <legend className="label">Vendu</legend>
               <div className="grid grid-cols-2 gap-2">
                 {[["piece", "À la pièce"], ["kg", "Au kilo"]].map(([v, l]) => (
@@ -70,7 +93,7 @@ export default function ProductForm({ action, categories, initial = EMPTY, isNew
                   </label>
                 ))}
               </div>
-            </fieldset>
+            </fieldset>}
           </div>
           <div className="grid gap-5 sm:grid-cols-3">
             <div>
@@ -81,12 +104,16 @@ export default function ProductForm({ action, categories, initial = EMPTY, isNew
               <label htmlFor="promo_price" className="label">Prix promo{per} (F)</label>
               <input id="promo_price" name="promo_price" inputMode="numeric" value={promo} onChange={(e) => setPromo(e.target.value)} className="field tabular" placeholder="Facultatif" />
             </div>
-            <div>
-              <label htmlFor="stock_alert" className="label">Alerte stock bas</label>
-              <input id="stock_alert" name="stock_alert" inputMode="decimal" defaultValue={initial.stock_alert || ""} className="field tabular" placeholder="Ex. 5" />
-            </div>
+            {isPack ? <input type="hidden" name="stock_alert" value="0" /> : (
+              <div>
+                <label htmlFor="stock_alert" className="label">Alerte sous{unit === "kg" ? " (kg)" : ""}</label>
+                <input id="stock_alert" name="stock_alert" inputMode="decimal" defaultValue={initial.stock_alert ?? 5} className="field tabular" placeholder="5" />
+              </div>
+            )}
           </div>
-          <div className="grid gap-5 rounded-xl bg-cream p-4 sm:grid-cols-3">
+          {isPack ? (
+            <p className="rounded-xl bg-cream p-4 text-sm text-mute">Le prix d&apos;achat d&apos;un pack est la somme de ses composants : le bénéfice est calculé automatiquement à chaque vente. La composition se règle sous ce formulaire, une fois le pack créé.</p>
+          ) : <div className="grid gap-5 rounded-xl bg-cream p-4 sm:grid-cols-3">
             <div>
               <label htmlFor="cost_price" className="label">Prix d&apos;achat{per} (F)</label>
               <input id="cost_price" name="cost_price" inputMode="numeric" value={cost} onChange={(e) => setCost(e.target.value)} className="field tabular" placeholder="Ex. 1600" />
@@ -102,8 +129,24 @@ export default function ProductForm({ action, categories, initial = EMPTY, isNew
                 <p className="text-sm text-mute">Saisissez le prix de vente et le prix d&apos;achat. Visible uniquement par le gérant et la gestion du stock.</p>
               )}
             </div>
+          </div>}
+          <div className="grid gap-5 sm:grid-cols-2">
+            {!isPack && (
+              <div>
+                <label htmlFor="supplier_id" className="label">Fournisseur</label>
+                <select id="supplier_id" name="supplier_id" defaultValue={initial.supplier_id ?? ""} className="field">
+                  <option value="">Non renseigné</option>
+                  {suppliers.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
+                </select>
+              </div>
+            )}
+            <div>
+              <label htmlFor="sale_ends_on" className="label">Fin de l&apos;offre <span className="font-normal text-mute">(facultatif)</span></label>
+              <input id="sale_ends_on" name="sale_ends_on" type="date" defaultValue={lastDay(initial.sale_ends_at)} className="field" />
+              <p className="mt-1 text-xs text-mute">Dernier jour de vente : le produit disparaît de la boutique le lendemain.</p>
+            </div>
           </div>
-          {isNew && (
+          {isNew && !isPack && (
             <div className="sm:w-1/3">
               <label htmlFor="initial_stock" className="label">Stock de départ{unit === "kg" ? " (kg)" : ""}</label>
               <input id="initial_stock" name="initial_stock" inputMode="decimal" className="field tabular" placeholder="0" />

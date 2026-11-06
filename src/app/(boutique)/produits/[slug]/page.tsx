@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCategories, getProduct, getProductsByCategory } from "@/lib/shop";
-import { fcfa } from "@/lib/format";
+import { getCategories, getProduct, getProductsByCategory, getPackDetail } from "@/lib/shop";
+import { fcfa, offerEnds, qty } from "@/lib/format";
+import { IconCheck } from "@/components/icons";
 import AddToCart from "@/components/shop/AddToCart";
 import ProductCard from "@/components/shop/ProductCard";
 import ProductThumb from "@/components/shop/ProductThumb";
@@ -22,6 +23,8 @@ export default async function ProductPage({ params }: { params: Params }) {
   const cat = (await getCategories()).find((c) => c.id === p.category_id);
   const others = cat ? (await getProductsByCategory(cat.id)).filter((o) => o.id !== p.id && o.in_stock).slice(0, 5) : [];
   const price = p.promo_price ?? p.price;
+  const pack = p.kind === "pack" ? await getPackDetail(p) : null;
+  const ends = offerEnds(p.sale_ends_at);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
@@ -39,12 +42,29 @@ export default async function ProductPage({ params }: { params: Params }) {
             {p.promo_price != null && <span className="ml-3 text-lg text-mute line-through">{fcfa(p.price)}</span>}
           </p>
           {p.unit === "kg" && <p className="text-sm text-mute">Vendu par demi-kilo. Le poids exact est pesé à la préparation.</p>}
-          {p.description && <p className="whitespace-pre-line text-ink/80">{p.description}</p>}
+          {pack && (
+            <div className="rounded-2xl bg-red-50 p-5">
+              <p className="text-xs font-bold tracking-[0.14em] text-red uppercase">Dans ce pack</p>
+              <ul className="mt-3 space-y-2">
+                {pack.items.map((i) => (
+                  <li key={i.slug} className="flex items-center gap-2.5">
+                    <IconCheck className="size-5 shrink-0 text-red" />
+                    <span><strong className="tabular">{qty(i.qty, i.unit)}</strong> {i.name.replace(/\s*\(au kg\)\s*/i, "")}</span>
+                  </li>
+                ))}
+              </ul>
+              {pack.value != null && pack.value > price && (
+                <p className="mt-4 text-sm">Valeur au détail : <span className="line-through tabular">{fcfa(pack.value)}</span> · <strong className="text-red">vous économisez {fcfa(pack.value - price)}</strong></p>
+              )}
+            </div>
+          )}
+          {ends && <p className="inline-flex rounded-full bg-sun px-3 py-1 text-sm font-semibold">{ends}</p>}
+          {p.description && !pack && <p className="whitespace-pre-line text-ink/80">{p.description}</p>}
           <div className="max-w-xs">
             {p.in_stock ? (
               <AddToCart large product={{ id: p.id, slug: p.slug, name: p.name, unit: p.unit, price, image_url: p.image_url }} />
             ) : (
-              <p className="rounded-xl bg-cream px-4 py-3 text-mute">Épuisé pour le moment. Bientôt de retour.</p>
+              <p className="rounded-xl bg-cream px-4 py-3 text-mute">{pack ? "Victime de son succès : réassort en cours. Écrivez-nous sur WhatsApp pour réserver." : "Épuisé pour le moment. Bientôt de retour."}</p>
             )}
           </div>
           <Link href="/panier" className="inline-block text-sm font-semibold text-red underline-offset-4 hover:underline">Voir mon panier</Link>

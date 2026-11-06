@@ -11,7 +11,7 @@ export default async function CostsPage({ searchParams }: { searchParams: Promis
   const { rayon } = await searchParams;
   const cat = (cats ?? []).find((c) => c.slug === rayon) ?? cats?.[0];
   const [{ data: products }, { data: costs }] = await Promise.all([
-    cat ? supabase.from("products").select("id, name, unit, price, promo_price").eq("category_id", cat.id).eq("is_active", true).order("name") : Promise.resolve({ data: [] }),
+    cat ? supabase.from("products").select("id, name, unit, price, promo_price").eq("category_id", cat.id).eq("is_active", true).eq("kind", "simple").order("name") : Promise.resolve({ data: [] }),
     supabase.from("product_costs").select("product_id, cost_price"),
   ]);
   const costBy = new Map((costs ?? []).map((c) => [c.product_id, c.cost_price as number]));

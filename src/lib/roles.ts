@@ -22,6 +22,7 @@ export const STAFF_NAV: NavItem[] = [
   { href: "/gestion/statistiques", label: "Statistiques", roles: ["gerant"] },
   { href: "/gestion/commandes", label: "Commandes", roles: ["gerant", "vendeur", "livreur"] },
   { href: "/gestion/produits", label: "Produits", roles: ["gerant", "stock", "vendeur"] },
+  { href: "/gestion/reappro", label: "Réapprovisionnement", roles: ["gerant", "stock"] },
   { href: "/gestion/stock", label: "Arrivages et pertes", roles: ["gerant", "stock"] },
   { href: "/gestion/inventaire", label: "Inventaire", roles: ["gerant", "stock"] },
   { href: "/gestion/prix-achat", label: "Prix d'achat", roles: ["gerant", "stock"] },
