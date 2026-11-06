@@ -12,7 +12,7 @@ export default async function CaissePage() {
   const [{ data: products }, { data: cats }, { data: settings }] = await Promise.all([
     supabase.from("products").select("id, name, unit, price, promo_price, barcode, category_id, kind, image_url, is_active").eq("is_active", true).not("price", "is", null).order("name"),
     supabase.from("categories").select("id, name").order("position"),
-    supabase.from("store_settings").select("phone, base_address").eq("id", 1).maybeSingle(),
+    supabase.from("store_settings").select("phone, base_address, ninea, rccm").eq("id", 1).maybeSingle(),
   ]);
   const list = (products ?? []).map((p) => ({
     id: p.id as string, name: p.name as string, unit: p.unit as "piece" | "kg", price: (p.promo_price ?? p.price) as number,
@@ -25,7 +25,7 @@ export default async function CaissePage() {
       cashier={name || "Caisse"}
       isManager={role === "gerant"}
       pulse={pulse}
-      store={{ phone: settings?.phone ?? "+221 78 737 82 90", address: settings?.base_address ?? "HLM Patte d'Oie, Dakar" }}
+      store={{ phone: settings?.phone ?? "+221 78 737 82 90", address: settings?.base_address ?? "HLM Patte d'Oie, Dakar", ninea: settings?.ninea ?? "", rccm: settings?.rccm ?? "" }}
     />
   );
 }

@@ -5,7 +5,7 @@ export type ReceiptData = {
   number: string; at: string; cashier: string; payment: string; total: number;
   cash: number | null; change: number | null; duplicate?: boolean;
   lines: { name: string; unit: string; qty: number; price: number; total: number }[];
-  store: { phone: string; address: string };
+  store: { phone: string; address: string; ninea?: string; rccm?: string };
 };
 
 /**
@@ -31,6 +31,9 @@ export default function Receipt({ data }: { data: ReceiptData }) {
           <img src="/brand/logo.png" alt="" style={{ width: "38mm", filter: "grayscale(1) contrast(1.4)" }} />
           <div style={{ marginTop: 4 }}>{data.store.address}</div>
           <div>Tél. / Wave / OM : {data.store.phone}</div>
+          {(data.store.ninea || data.store.rccm) && (
+            <div style={{ fontSize: 10 }}>{data.store.ninea ? `NINEA ${data.store.ninea}` : ""}{data.store.ninea && data.store.rccm ? " · " : ""}{data.store.rccm ? `RCCM ${data.store.rccm}` : ""}</div>
+          )}
         </div>
         <div style={{ borderTop: "1px dashed #000", margin: "6px 0" }} />
         <div style={{ display: "flex", justifyContent: "space-between" }}><span>Ticket {data.number}</span><span>{date}</span></div>

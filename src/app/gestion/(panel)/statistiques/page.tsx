@@ -86,6 +86,8 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
           <label className="text-xs text-mute">Du<input type="date" name="du" defaultValue={dayInput(period.from)} className="field mt-1 py-2" /></label>
           <label className="text-xs text-mute">Au<input type="date" name="au" defaultValue={dayInput(new Date(period.to.getTime() - 86_400_000))} className="field mt-1 py-2" /></label>
           <button type="submit" className="btn-ghost min-h-10">Voir</button>
+          <a href={`/gestion/export/ventes?du=${dayInput(period.from)}&au=${dayInput(new Date(period.to.getTime() - 86_400_000))}`} download className="btn-primary min-h-10">Exporter les ventes (Excel)</a>
+          <a href={"/gestion/export/stock"} download className="btn-ghost min-h-10">Exporter le stock</a>
         </form>
       </header>
 

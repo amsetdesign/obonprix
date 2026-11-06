@@ -15,7 +15,7 @@ import type { OrderPulse } from "../(panel)/watch-actions";
 type Product = { id: string; name: string; unit: "piece" | "kg"; price: number; barcode: string | null; category_id: number | null; kind: string };
 type Line = Product & { qty: number };
 type Pay = "especes" | "wave" | "om";
-type Props = { products: Product[]; categories: { id: number; name: string }[]; cashier: string; isManager: boolean; store: { phone: string; address: string }; pulse: OrderPulse | null };
+type Props = { products: Product[]; categories: { id: number; name: string }[]; cashier: string; isManager: boolean; store: { phone: string; address: string; ninea?: string; rccm?: string }; pulse: OrderPulse | null };
 
 const PAY_LABEL: Record<Pay, string> = { especes: "Espèces", wave: "Wave", om: "Orange Money" };
 const plain = (s: string) => s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase();

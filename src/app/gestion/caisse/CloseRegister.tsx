@@ -10,7 +10,7 @@ const FLOAT_KEY = "obp-fond-de-caisse";
 const time = (iso: string) => new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "Africa/Dakar" }).format(new Date(iso));
 
 /** Clôture de caisse : point des ventes, comptage des espèces, écart, ticket Z imprimé */
-export default function CloseRegister({ cashier, store, onClose }: { cashier: string; store: { phone: string; address: string }; onClose: () => void }) {
+export default function CloseRegister({ cashier, store, onClose }: { cashier: string; store: { phone: string; address: string; ninea?: string; rccm?: string }; onClose: () => void }) {
   const [st, setSt] = useState<RegisterStatus | null>(null);
   const [field, setField] = useState<"float" | "counted">("counted");
   // fenêtre ouverte au clic (jamais rendue côté serveur) : le dernier fond de caisse est relu directement
@@ -118,6 +118,7 @@ export default function CloseRegister({ cashier, store, onClose }: { cashier: st
           <div id="ticket-z" aria-hidden>
             <div style={{ textAlign: "center", fontWeight: 700, fontSize: 15 }}>Ô BON PRIX · CLÔTURE DE CAISSE</div>
             <div style={{ textAlign: "center" }}>{store.address}</div>
+            {(store.ninea || store.rccm) && <div style={{ textAlign: "center", fontSize: 10 }}>{store.ninea ? `NINEA ${store.ninea}` : ""}{store.ninea && store.rccm ? " · " : ""}{store.rccm ? `RCCM ${store.rccm}` : ""}</div>}
             <div style={{ borderTop: "1px dashed #000", margin: "6px 0" }} />
             <div>Du {time(done.period_start)}</div>
             <div>Au {time(done.period_end)}</div>

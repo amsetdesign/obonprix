@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { getActivePacks, getCategories, getFeatured, getHighlights, getPromoCount, getZones } from "@/lib/shop";
 import { fcfa, offerEnds } from "@/lib/format";
+import { SITE_URL } from "@/lib/site";
 import FeaturedColumn from "@/components/shop/FeaturedColumn";
 import HeroSlider from "@/components/shop/HeroSlider";
 import ProductCard from "@/components/shop/ProductCard";
@@ -29,6 +30,22 @@ export default async function Home() {
     <main className="space-y-14 pb-4 sm:space-y-16">
       {/* Haut de page : produits prioritaires (bloc 1), diaporama (bloc 2), rayons (bloc 3) */}
       <div className="mx-auto max-w-6xl space-y-5 px-4 pt-4 sm:px-6">
+        <script
+          type="application/ld+json"
+          // données structurées : aide Google à afficher la boutique (horaires, zone, téléphone)
+          dangerouslySetInnerHTML={{ __html: JSON.stringify({
+            "@context": "https://schema.org", "@type": "GroceryStore", name: "Ô Bon Prix", url: SITE_URL, logo: `${SITE_URL}/brand/logo.png`, image: `${SITE_URL}/opengraph-image.jpg`,
+            telephone: "+221787378290", priceRange: "F CFA",
+            address: { "@type": "PostalAddress", streetAddress: "HLM Patte d'Oie", addressLocality: "Dakar", addressCountry: "SN" },
+            areaServed: { "@type": "City", name: "Dakar" },
+            openingHoursSpecification: [
+              { "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], opens: "08:00", closes: "23:00" },
+              { "@type": "OpeningHoursSpecification", dayOfWeek: "Sunday", opens: "12:00", closes: "23:00" },
+            ],
+            paymentAccepted: "Wave, Orange Money, espèces",
+            sameAs: ["https://www.facebook.com/obonprixsn", "https://www.instagram.com/o_bon_prix_sn", "https://www.tiktok.com/@o.bon.prix.sn"],
+          }) }}
+        />
         <h1 className="sr-only">Ô Bon Prix, supérette en ligne à Dakar : vos courses livrées chez vous</h1>
         <div className={`grid grid-cols-1 gap-4 lg:h-[380px] ${featured.length ? "lg:grid-cols-[300px_1fr]" : ""}`}>
           {featured.length > 0 && (
