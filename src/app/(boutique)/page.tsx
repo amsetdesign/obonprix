@@ -36,7 +36,7 @@ export default async function Home() {
               <FeaturedColumn products={featured} rayonOf={(p) => catSlug.get(p.category_id ?? 0)} />
             </div>
           )}
-          <div className="order-1 aspect-[16/11] min-w-0 sm:aspect-[2.4/1] lg:order-2 lg:aspect-auto lg:h-full">
+          <div className="order-1 aspect-[16/11] min-h-0 min-w-0 overflow-hidden rounded-[20px] sm:aspect-[2.4/1] lg:order-2 lg:aspect-auto lg:h-full">
             <HeroSlider
               minFee={minFee}
               promoCount={promoCount}

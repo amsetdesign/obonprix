@@ -54,15 +54,15 @@ export default function HeroSlider({ minFee, promoCount, pack }: Props) {
       <div className="pointer-events-none absolute right-[-4%] bottom-[-2%] h-[78%] w-[62%] sm:right-[2%] sm:w-[52%]">
         <Image src={pack.image_url || "/egeries/detoure/pack-poulet.webp"} alt="Panier de cuisses, pilons, ailes et blancs de poulet" fill sizes="(min-width: 1024px) 480px, 60vw" className="object-contain object-bottom drop-shadow-2xl [mask-image:linear-gradient(to_bottom,black_85%,transparent)]" />
       </div>
-      <div className="relative z-10 flex h-full max-w-[60%] flex-col justify-center gap-1.5 p-5 sm:max-w-[52%] sm:gap-3 sm:p-10">
+      <div className="relative z-10 flex h-full max-w-[60%] flex-col justify-center gap-1.5 p-5 sm:max-w-[52%] sm:gap-2.5 sm:px-10 sm:py-7">
         <Eyebrow className="text-sun">1 an déjà · merci Dakar</Eyebrow>
-        <p className="font-display text-[24px] leading-none font-black sm:text-[46px]">{pack.name}</p>
+        <p className="font-display text-[24px] leading-none font-black sm:text-[40px]">{pack.name}</p>
         <ul className="hidden space-y-0.5 text-sm text-white/90 sm:block">
           {pack.items.map((i) => <li key={i.name} className="flex items-center gap-2"><IconCheck className="size-4 text-sun" />{portion(i)}</li>)}
         </ul>
         <p className="text-xs text-white/85 sm:hidden">{pack.items.map((i) => i.name.replace(/\s*\(au kg\)\s*/i, "").replace(/ de poulet/i, "")).join(", ")}</p>
         <div className="flex flex-wrap items-baseline gap-x-3">
-          <span className="font-display text-[26px] font-black text-sun tabular sm:text-5xl">{fcfa(pack.price)}</span>
+          <span className="font-display text-[26px] font-black text-sun tabular sm:text-[42px]">{fcfa(pack.price)}</span>
           {pack.value != null && pack.value > pack.price && <span className="text-xs text-white/75 line-through tabular sm:text-sm">{fcfa(pack.value)}</span>}
         </div>
         <div className="flex flex-wrap items-center gap-3">
