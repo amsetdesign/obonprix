@@ -65,6 +65,7 @@ export default function HeroSlider({ minFee, promoCount, pack }: Props) {
           <span className="font-display text-[26px] font-black text-sun tabular sm:text-[42px]">{fcfa(pack.price)}</span>
           {pack.value != null && pack.value > pack.price && <span className="text-xs text-white/75 line-through tabular sm:text-sm">{fcfa(pack.value)}</span>}
         </div>
+        {pack.endsLabel && <p className="-mt-1 text-[10px] text-white/80 sm:text-xs">{pack.endsLabel}</p>}
         <div className="flex flex-wrap items-center gap-3">
           <div className="w-44 sm:w-52">
             {pack.in_stock ? (
@@ -75,7 +76,6 @@ export default function HeroSlider({ minFee, promoCount, pack }: Props) {
           </div>
           <Link href={`/produits/${pack.slug}`} className="hidden text-sm font-semibold text-white underline underline-offset-4 sm:inline">Détails</Link>
         </div>
-        {pack.endsLabel && <p className="text-[10px] text-white/75 sm:text-xs">{pack.endsLabel}</p>}
       </div>
     </div>
   ) : null;
