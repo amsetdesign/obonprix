@@ -23,7 +23,17 @@ export async function saveSettings(_prev: SettingsState, fd: FormData): Promise<
   const om = String(fd.get("om_number") ?? "").trim();
   if (![phone, wave, om].every((n) => /^\+?[0-9 ]{9,20}$/.test(n))) return { error: "Numéro de téléphone invalide." };
 
+  const hoursCancel = Number(fd.get("unpaid_cancel_hours") ?? 3);
+  if (!Number.isInteger(hoursCancel) || hoursCancel < 0 || hoursCancel > 72) return { error: "Délai d'annulation : de 0 à 72 heures." };
+  const email = String(fd.get("email") ?? "").trim();
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "E-mail invalide." };
+
   const { error } = await supabase.from("store_settings").update({
+    unpaid_cancel_hours: hoursCancel,
+    legal_name: String(fd.get("legal_name") ?? "").trim().slice(0, 160),
+    ninea: String(fd.get("ninea") ?? "").trim().slice(0, 40),
+    rccm: String(fd.get("rccm") ?? "").trim().slice(0, 60),
+    email: email.slice(0, 160),
     accepting_orders: fd.get("accepting_orders") === "on",
     phone, wave_number: wave, om_number: om,
     whatsapp: phone.replace(/\D/g, "").replace(/^(?!221)/, "221"),

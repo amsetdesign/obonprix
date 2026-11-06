@@ -45,3 +45,25 @@ export async function cancelSale(id: string): Promise<{ error?: string }> {
   const { error } = await supabase.rpc("cancel_sale", { p_sale: id });
   return error ? { error: "Annulation impossible." } : {};
 }
+
+export type RegisterStatus = { since: string; cash: number; wave: number; om: number; tickets: number; cancelled: number };
+export type Closure = {
+  id: string; period_start: string; period_end: string; opening_float: number; cash_sales: number; wave_sales: number; om_sales: number;
+  tickets: number; cancelled: number; expected_cash: number; counted_cash: number; difference: number; note: string;
+};
+
+/** Point de caisse depuis la dernière clôture */
+export async function registerStatus(): Promise<RegisterStatus | null> {
+  const { supabase } = await requireStaff(["gerant", "vendeur"]);
+  const { data } = await supabase.rpc("register_status");
+  return (data as RegisterStatus | null) ?? null;
+}
+
+/** Clôture : espèces comptées comparées au montant attendu (fond + ventes en espèces) */
+export async function closeRegister(openingFloat: number, counted: number, note: string): Promise<{ error?: string; closure?: Closure }> {
+  const { supabase } = await requireStaff(["gerant", "vendeur"]);
+  if (!Number.isInteger(openingFloat) || openingFloat < 0 || !Number.isInteger(counted) || counted < 0) return { error: "Montants invalides." };
+  const { data, error } = await supabase.rpc("close_register", { p_float: openingFloat, p_counted: counted, p_note: note.slice(0, 300) });
+  if (error || !data) return { error: "La clôture a échoué. Réessayez." };
+  return { closure: data as Closure };
+}

@@ -8,6 +8,7 @@ const DAYS: [string, string][] = [["lun", "Lundi"], ["mar", "Mardi"], ["mer", "M
 type Settings = {
   accepting_orders: boolean; phone: string; wave_number: string; om_number: string; base_address: string;
   hours: Record<string, [string, string] | null>;
+  unpaid_cancel_hours?: number; legal_name?: string; ninea?: string; rccm?: string; email?: string;
 };
 
 export default function SettingsForm({ s }: { s: Settings }) {
@@ -24,6 +25,22 @@ export default function SettingsForm({ s }: { s: Settings }) {
         <div><label htmlFor="om_number" className="label">Numéro Orange Money</label><input id="om_number" name="om_number" defaultValue={s.om_number} className="field" /></div>
       </div>
       <div><label htmlFor="base_address" className="label">Point de départ des livraisons</label><input id="base_address" name="base_address" defaultValue={s.base_address} className="field" /></div>
+      <div>
+        <label htmlFor="unpaid_cancel_hours" className="label">Annuler les commandes non payées après</label>
+        <div className="flex items-center gap-2">
+          <input id="unpaid_cancel_hours" name="unpaid_cancel_hours" type="number" min={0} max={72} defaultValue={s.unpaid_cancel_hours ?? 3} className="field w-24 tabular" />
+          <span className="text-sm text-mute">heures (0 = jamais). Le stock réservé est rendu automatiquement.</span>
+        </div>
+      </div>
+      <fieldset className="space-y-3 rounded-xl border border-line p-4">
+        <legend className="label px-1">Informations légales (affichées dans les mentions légales du site)</legend>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div><label htmlFor="legal_name" className="label">Raison sociale</label><input id="legal_name" name="legal_name" defaultValue={s.legal_name ?? ""} className="field" /></div>
+          <div><label htmlFor="email" className="label">E-mail de contact</label><input id="email" name="email" type="email" defaultValue={s.email ?? ""} className="field" /></div>
+          <div><label htmlFor="ninea" className="label">NINEA</label><input id="ninea" name="ninea" defaultValue={s.ninea ?? ""} className="field" /></div>
+          <div><label htmlFor="rccm" className="label">RCCM</label><input id="rccm" name="rccm" defaultValue={s.rccm ?? ""} className="field" /></div>
+        </div>
+      </fieldset>
       <fieldset>
         <legend className="label">Horaires</legend>
         <div className="divide-y divide-line rounded-xl border border-line">

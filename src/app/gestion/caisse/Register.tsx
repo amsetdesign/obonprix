@@ -7,6 +7,8 @@ import { fcfa, qty as fmtQty } from "@/lib/format";
 import { IconClose, IconReceipt, IconSearch, IconTrash } from "@/components/icons";
 import { cancelSale, recordSale, todaySales } from "./actions";
 import Receipt, { type ReceiptData } from "./Receipt";
+import Keypad from "./Keypad";
+import CloseRegister from "./CloseRegister";
 import { CountBadge, OrderToast, useOrderAlerts } from "../order-alerts";
 import type { OrderPulse } from "../(panel)/watch-actions";
 
@@ -19,30 +21,6 @@ const PAY_LABEL: Record<Pay, string> = { especes: "Espèces", wave: "Wave", om: 
 const plain = (s: string) => s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const lineTotal = (l: Line) => Math.round(l.price * l.qty);
 
-/** Pavé numérique tactile */
-function Keypad({ value, onChange, decimal }: { value: string; onChange: (v: string) => void; decimal?: boolean }) {
-  const keys = ["7", "8", "9", "4", "5", "6", "1", "2", "3", decimal ? "," : "00", "0", "⌫"];
-  return (
-    <div className="grid grid-cols-3 gap-2">
-      {keys.map((k) => (
-        <button
-          key={k}
-          type="button"
-          onClick={() => {
-            if (k === "⌫") onChange(value.slice(0, -1));
-            else if (k === "," && value.includes(",")) return;
-            else onChange((value === "0" && k !== "," ? "" : value) + k);
-          }}
-          className="h-16 rounded-xl bg-cream text-2xl font-bold tabular active:bg-line"
-          aria-label={k === "⌫" ? "Effacer" : k}
-        >
-          {k}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 export default function Register({ products, categories, cashier, isManager, store, pulse: initialPulse }: Props) {
   const alerts = useOrderAlerts(initialPulse);
   const [lines, setLines] = useState<Line[]>([]);
@@ -54,6 +32,7 @@ export default function Register({ products, categories, cashier, isManager, sto
   const [receipt, setReceipt] = useState<ReceiptData | null>(null);
   const [history, setHistory] = useState<Awaited<ReturnType<typeof todaySales>> | null>(null);
   const [error, setError] = useState("");
+  const [closing, setClosing] = useState(false);
   const [pending, start] = useTransition();
   const searchRef = useRef<HTMLInputElement>(null);
   const [now, setNow] = useState("");
@@ -171,6 +150,7 @@ export default function Register({ products, categories, cashier, isManager, sto
         <span className="hidden text-sm text-white/70 first-letter:uppercase md:block">{now}</span>
         <div className="flex items-center gap-2">
           <button type="button" onClick={openHistory} className="btn min-h-10 bg-white/10 text-white hover:bg-white/20"><IconReceipt className="size-5" /> Tickets du jour</button>
+          <button type="button" onClick={() => setClosing(true)} className="btn min-h-10 bg-white/10 text-white hover:bg-white/20">Clôturer</button>
           <Link href="/gestion/commandes" className="btn min-h-10 bg-white/10 text-white hover:bg-white/20">
             Commandes en ligne <CountBadge count={alerts.pulse?.count ?? 0} />
           </Link>
@@ -376,6 +356,7 @@ export default function Register({ products, categories, cashier, isManager, sto
       )}
 
       {receipt && <Receipt data={receipt} />}
+      {closing && <CloseRegister cashier={cashier} store={store} onClose={() => setClosing(false)} />}
       <OrderToast toast={alerts.toast} onClose={alerts.closeToast} />
     </div>
   );

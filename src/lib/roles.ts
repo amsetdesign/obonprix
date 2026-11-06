@@ -21,6 +21,7 @@ export const STAFF_NAV: NavItem[] = [
   { href: "/gestion", label: "Accueil", roles: ["gerant", "stock", "vendeur", "livreur"] },
   { href: "/gestion/caisse", label: "Caisse", roles: ["gerant", "vendeur"] },
   { href: "/gestion/statistiques", label: "Statistiques", roles: ["gerant"] },
+  { href: "/gestion/clotures", label: "Clôtures de caisse", roles: ["gerant"] },
   { href: "/gestion/commandes", label: "Commandes", roles: ["gerant", "vendeur", "livreur"] },
   { href: "/gestion/produits", label: "Produits", roles: ["gerant", "stock", "vendeur"] },
   { href: "/gestion/reappro", label: "Réapprovisionnement", roles: ["gerant", "stock"] },
@@ -28,6 +29,7 @@ export const STAFF_NAV: NavItem[] = [
   { href: "/gestion/inventaire", label: "Inventaire", roles: ["gerant", "stock"] },
   { href: "/gestion/prix-achat", label: "Prix d'achat", roles: ["gerant", "stock"] },
   { href: "/gestion/equipe", label: "Équipe", roles: ["gerant"] },
+  { href: "/gestion/recrutement", label: "Recrutement", roles: ["gerant"] },
   { href: "/gestion/reglages", label: "Réglages", roles: ["gerant"] },
 ];
 

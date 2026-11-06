@@ -30,7 +30,8 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
     <div className="space-y-6">
       <header>
         <h1 className="font-display text-2xl font-extrabold sm:text-3xl">{role === "livreur" ? "Mes livraisons" : "Commandes en ligne"}</h1>
-        <p className="mt-1 text-sm text-mute">Une commande part uniquement quand son paiement Wave ou Orange Money est confirmé.</p>
+        <p className="mt-1 text-sm text-mute">Une commande part uniquement quand son paiement Wave ou Orange Money est confirmé. Les commandes non payées sont annulées automatiquement (délai réglable dans Réglages).</p>
+        {role !== "livreur" && <Link href="/gestion/commandes/nouvelle" className="btn-primary mt-4">Saisir une commande WhatsApp</Link>}
       </header>
       <nav aria-label="Vues" className="flex flex-wrap gap-2">
         {TABS.map((t) => (

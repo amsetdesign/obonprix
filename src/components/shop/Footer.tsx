@@ -59,7 +59,18 @@ export default function Footer({ categories, settings }: { categories: Category[
           <p className="space-x-4 text-white/80"><Link href="/mes-commandes" className="underline underline-offset-4 hover:text-white">Mes commandes</Link><Link href="/suivi" className="underline underline-offset-4 hover:text-white">Suivre une commande</Link></p>
         </div>
       </div>
-      <p className="border-t border-white/10 py-5 text-center text-xs text-white/50">© {new Date().getFullYear()} Ô Bon Prix Superette, Dakar</p>
+      <div className="border-t border-white/10">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-white/60 sm:px-6">
+          <p>© {new Date().getFullYear()} Ô Bon Prix Superette, Dakar</p>
+          <nav aria-label="Informations">
+            <ul className="flex flex-wrap gap-x-5 gap-y-2">
+              {[["/a-propos", "À propos"], ["/recrutement", "Recrutement"], ["/cgv", "Conditions de vente"], ["/mentions-legales", "Mentions légales"], ["/confidentialite", "Confidentialité"]].map(([href, label]) => (
+                <li key={href}><Link href={href} className="hover:text-white">{label}</Link></li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+      </div>
     </footer>
   );
 }
