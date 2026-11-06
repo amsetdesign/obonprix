@@ -7,11 +7,13 @@ import { fcfa, qty as fmtQty } from "@/lib/format";
 import { IconClose, IconReceipt, IconSearch, IconTrash } from "@/components/icons";
 import { cancelSale, recordSale, todaySales } from "./actions";
 import Receipt, { type ReceiptData } from "./Receipt";
+import { CountBadge, OrderToast, useOrderAlerts } from "../order-alerts";
+import type { OrderPulse } from "../(panel)/watch-actions";
 
 type Product = { id: string; name: string; unit: "piece" | "kg"; price: number; barcode: string | null; category_id: number | null; kind: string };
 type Line = Product & { qty: number };
 type Pay = "especes" | "wave" | "om";
-type Props = { products: Product[]; categories: { id: number; name: string }[]; cashier: string; isManager: boolean; store: { phone: string; address: string } };
+type Props = { products: Product[]; categories: { id: number; name: string }[]; cashier: string; isManager: boolean; store: { phone: string; address: string }; pulse: OrderPulse | null };
 
 const PAY_LABEL: Record<Pay, string> = { especes: "Espèces", wave: "Wave", om: "Orange Money" };
 const plain = (s: string) => s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase();
@@ -41,7 +43,8 @@ function Keypad({ value, onChange, decimal }: { value: string; onChange: (v: str
   );
 }
 
-export default function Register({ products, categories, cashier, isManager, store }: Props) {
+export default function Register({ products, categories, cashier, isManager, store, pulse: initialPulse }: Props) {
+  const alerts = useOrderAlerts(initialPulse);
   const [lines, setLines] = useState<Line[]>([]);
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState<number | null>(null);
@@ -168,6 +171,10 @@ export default function Register({ products, categories, cashier, isManager, sto
         <span className="hidden text-sm text-white/70 first-letter:uppercase md:block">{now}</span>
         <div className="flex items-center gap-2">
           <button type="button" onClick={openHistory} className="btn min-h-10 bg-white/10 text-white hover:bg-white/20"><IconReceipt className="size-5" /> Tickets du jour</button>
+          <Link href="/gestion/commandes" className="btn min-h-10 bg-white/10 text-white hover:bg-white/20">
+            Commandes en ligne <CountBadge count={alerts.pulse?.count ?? 0} />
+          </Link>
+          {alerts.perm === "default" && <button type="button" onClick={alerts.enable} className="btn min-h-10 bg-sun text-ink hover:bg-white">Activer le son</button>}
           <Link href="/gestion" className="btn min-h-10 bg-white/10 text-white hover:bg-white/20">Gestion</Link>
         </div>
       </header>
@@ -369,6 +376,7 @@ export default function Register({ products, categories, cashier, isManager, sto
       )}
 
       {receipt && <Receipt data={receipt} />}
+      <OrderToast toast={alerts.toast} onClose={alerts.closeToast} />
     </div>
   );
 }

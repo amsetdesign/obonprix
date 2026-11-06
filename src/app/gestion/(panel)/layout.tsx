@@ -5,11 +5,13 @@ import { requireStaff } from "@/lib/staff";
 import { ROLE_LABEL, STAFF_NAV } from "@/lib/roles";
 import { logoutAction } from "../auth-actions";
 import StaffNav from "./StaffNav";
+import { orderPulse } from "./watch-actions";
 
 export const metadata: Metadata = { title: { default: "Gestion", template: "%s | Gestion Ô Bon Prix" }, robots: { index: false } };
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const staff = await requireStaff();
+  const pulse = staff.role === "gerant" || staff.role === "vendeur" ? await orderPulse().catch(() => null) : null;
   const items = STAFF_NAV.filter((i) => i.roles.includes(staff.role)).map(({ href, label }) => ({ href, label }));
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[240px_1fr]">
@@ -23,7 +25,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
             <p className="text-xs text-mute">{ROLE_LABEL[staff.role]}</p>
           </div>
         </div>
-        <StaffNav items={items} />
+        <StaffNav items={items} initial={pulse} />
         <form action={logoutAction} className="hidden px-5 py-5 lg:mt-auto lg:block">
           <button type="submit" className="text-sm text-mute underline-offset-4 hover:text-red hover:underline">Se déconnecter</button>
         </form>
