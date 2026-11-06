@@ -21,7 +21,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   // le livreur ne reçoit que ses commandes (règle de la base)
   const { data: orders } = await supabase
     .from("orders")
-    .select("id, number, customer_name, customer_phone, area, delivery_mode, total, payment_method, payment_status, status, created_at")
+    .select("id, number, customer_name, customer_phone, area, delivery_mode, total, payment_method, payment_status, status, created_at, channel")
     .in("status", tab.statuses)
     .order("created_at", { ascending: tab.key !== "terminees" })
     .limit(150);
@@ -45,7 +45,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           <li key={o.id}>
             <Link href={`/gestion/commandes/${o.id}`} className="card flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 hover:border-ink/25">
               <div className="min-w-0">
-                <p className="font-semibold"><span className="tabular">{o.number}</span> · {o.customer_name}</p>
+                <p className="font-semibold"><span className="tabular">{o.number}</span> · {o.customer_name} <span className={`pill ml-1 align-middle ${o.channel === "app" ? "bg-ink text-white" : "bg-cream text-ink ring-1 ring-line"}`}>{o.channel === "app" ? "Application" : o.channel === "whatsapp" ? "WhatsApp" : "Site"}</span></p>
                 <p className="text-sm text-mute">{dateTime(o.created_at)} · {o.area || "—"}{o.delivery_mode === "yango" ? " (Yango)" : ""} · {PAY_LABEL[o.payment_method]}</p>
               </div>
               <div className="flex items-center gap-3">
