@@ -21,10 +21,10 @@ export default function Header({ categories }: { categories: Category[] }) {
         <CartButton />
       </div>
       <nav aria-label="Rayons" className="mx-auto max-w-6xl overflow-x-auto px-4 sm:px-6">
-        <ul className="flex gap-1 pb-2">
+        <ul className="flex gap-1 pb-2 lg:justify-between lg:gap-0">
           {categories.map((c) => (
             <li key={c.slug}>
-              <Link href={`/rayons/${c.slug}`} className="block whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-ink hover:bg-cream hover:text-red">{c.name}</Link>
+              <Link href={`/rayons/${c.slug}`} className="block whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-ink hover:bg-cream hover:text-red lg:px-4 lg:text-[15px]">{c.name}</Link>
             </li>
           ))}
         </ul>
