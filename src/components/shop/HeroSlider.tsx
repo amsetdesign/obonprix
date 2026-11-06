@@ -119,15 +119,18 @@ export default function HeroSlider({ minFee, promoCount, pack }: Props) {
     // 3. Volaille et charcuterie : rouge, produits de l'affiche, égérie qui présente
     <div key="volaille" className="relative size-full overflow-hidden bg-red">
       <div className="absolute inset-y-0 right-0 w-[60%] bg-[radial-gradient(closest-side,#e8343a,transparent)]" aria-hidden />
-      <div className="absolute right-[38%] bottom-[6%] aspect-[2.3/1] w-[36%] sm:right-[34%] sm:w-[32%]">
-        <Image src="/rayons/surgeles.webp" alt="Viandes, volaille et fruits de mer" fill sizes="(min-width: 1024px) 300px, 40vw" className="object-contain [mask-image:radial-gradient(ellipse_at_center,black_55%,transparent_75%)]" />
+      {/* l'égérie présente de la main vers la droite : les produits sont placés là où elle les montre */}
+      <div className="pointer-events-none absolute right-[0%] bottom-0 h-[74%] w-[46%] sm:right-[25%] sm:h-[96%] sm:w-[34%]">
+        <Image src="/egeries/detoure/montre.webp" alt="" fill sizes="(min-width: 1024px) 360px, 45vw" className="object-contain object-bottom" />
       </div>
-      <Model src="/egeries/detoure/montre.webp" alt="" className="w-[48%] sm:w-[40%]" />
-      <div className="relative z-10 flex h-full max-w-[52%] flex-col justify-center gap-2 p-5 text-white sm:gap-4 sm:p-10">
+      <div className="absolute right-[-3%] bottom-[2%] aspect-[2.3/1] w-[30%] sm:right-[1%] sm:bottom-[22%] sm:w-[29%]">
+        <Image src="/rayons/surgeles.webp" alt="Viandes, volaille et fruits de mer" fill sizes="(min-width: 1024px) 260px, 32vw" className="object-contain drop-shadow-xl [mask-image:radial-gradient(ellipse_at_center,black_55%,transparent_75%)]" />
+      </div>
+      <div className="relative z-10 flex h-full max-w-[44%] flex-col justify-start gap-2 p-5 text-white sm:max-w-[44%] sm:justify-center sm:gap-4 sm:p-10">
         <Eyebrow className="text-sun">Au kilo · pesé pour vous</Eyebrow>
         <p className="font-display text-[22px] leading-[1.02] font-black sm:text-[42px]">Volaille et charcuterie</p>
         <p className="hidden max-w-xs text-white/85 sm:block">Cuisses, ailes, pilons, poulet entier, saucisses.</p>
-        <div><Link href="/rayons/surgeles" className="btn-sun min-h-9 px-4 text-xs sm:min-h-12 sm:px-6 sm:text-sm">Voir le rayon <IconArrow className="size-4" /></Link></div>
+        <div><Link href="/rayons/surgeles" className="btn-sun min-h-9 px-4 text-xs whitespace-nowrap sm:min-h-12 sm:px-6 sm:text-sm">Voir le rayon <IconArrow className="size-4" /></Link></div>
       </div>
     </div>,
 
