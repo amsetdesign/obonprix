@@ -15,6 +15,7 @@ export type ProductValues = {
   is_active: boolean;
   is_online: boolean;
   featured?: boolean;
+  cost_price?: number | null;
   image_url: string;
 };
 
@@ -33,6 +34,13 @@ const EMPTY: ProductValues = {
 export default function ProductForm({ action, categories, initial = EMPTY, isNew }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
   const [unit, setUnit] = useState(initial.unit);
+  const [price, setPrice] = useState(initial.price != null ? String(initial.price) : "");
+  const [promo, setPromo] = useState(initial.promo_price != null ? String(initial.promo_price) : "");
+  const [cost, setCost] = useState(initial.cost_price != null ? String(initial.cost_price) : "");
+  const num = (v: string) => (v.trim() === "" ? null : Number(v.replace(/\s/g, "").replace(",", ".")));
+  const sell = num(promo) ?? num(price);
+  const buy = num(cost);
+  const margin = sell != null && buy != null && Number.isFinite(sell) && Number.isFinite(buy) ? sell - buy : null;
   const [preview, setPreview] = useState<string | null>(null);
   const per = unit === "kg" ? " le kg" : "";
 
@@ -67,15 +75,32 @@ export default function ProductForm({ action, categories, initial = EMPTY, isNew
           <div className="grid gap-5 sm:grid-cols-3">
             <div>
               <label htmlFor="price" className="label">Prix{per} (F)</label>
-              <input id="price" name="price" inputMode="numeric" defaultValue={initial.price ?? ""} className="field tabular" placeholder="1500" />
+              <input id="price" name="price" inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value)} className="field tabular" placeholder="1500" />
             </div>
             <div>
               <label htmlFor="promo_price" className="label">Prix promo{per} (F)</label>
-              <input id="promo_price" name="promo_price" inputMode="numeric" defaultValue={initial.promo_price ?? ""} className="field tabular" placeholder="Facultatif" />
+              <input id="promo_price" name="promo_price" inputMode="numeric" value={promo} onChange={(e) => setPromo(e.target.value)} className="field tabular" placeholder="Facultatif" />
             </div>
             <div>
               <label htmlFor="stock_alert" className="label">Alerte stock bas</label>
               <input id="stock_alert" name="stock_alert" inputMode="decimal" defaultValue={initial.stock_alert || ""} className="field tabular" placeholder="Ex. 5" />
+            </div>
+          </div>
+          <div className="grid gap-5 rounded-xl bg-cream p-4 sm:grid-cols-3">
+            <div>
+              <label htmlFor="cost_price" className="label">Prix d&apos;achat{per} (F)</label>
+              <input id="cost_price" name="cost_price" inputMode="numeric" value={cost} onChange={(e) => setCost(e.target.value)} className="field tabular" placeholder="Ex. 1600" />
+            </div>
+            <div className="sm:col-span-2">
+              <p className="label">Bénéfice par {unit === "kg" ? "kilo" : "unité"}</p>
+              {margin != null ? (
+                <p className={`font-display text-2xl font-extrabold tabular ${margin < 0 ? "text-red" : "text-leaf"}`}>
+                  {margin.toLocaleString("fr-FR")} F
+                  {sell ? <span className="ml-2 text-sm font-semibold text-mute">soit {Math.round((margin / sell) * 100)} % du prix de vente</span> : null}
+                </p>
+              ) : (
+                <p className="text-sm text-mute">Saisissez le prix de vente et le prix d&apos;achat. Visible uniquement par le gérant et la gestion du stock.</p>
+              )}
             </div>
           </div>
           {isNew && (

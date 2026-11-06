@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireStaff } from "@/lib/staff";
 import { canEditCatalog } from "@/lib/roles";
-import { qty } from "@/lib/format";
+import { fcfa, qty } from "@/lib/format";
 
 export default async function Dashboard() {
   const { supabase, name, role } = await requireStaff();
@@ -10,6 +10,14 @@ export default async function Dashboard() {
     .select("id, name, unit, stock, stock_alert, price, is_active, is_online")
     .order("name");
   const list = products ?? [];
+  // chiffres du jour (gérant) et valeur du stock au prix d'achat (gérant, stock)
+  const today = new Date(); today.setUTCHours(0, 0, 0, 0);
+  const [{ data: day }, { data: stockVal }] = await Promise.all([
+    role === "gerant" ? supabase.rpc("sales_stats", { p_from: today.toISOString(), p_to: new Date(today.getTime() + 86_400_000).toISOString() }) : Promise.resolve({ data: null }),
+    canEditCatalog(role) ? supabase.rpc("stock_value") : Promise.resolve({ data: null }),
+  ]);
+  const d = day as { revenue: number; cost: number; revenue_with_cost: number; tickets: number } | null;
+  const sv = stockVal as { value: number; products_without_cost: number } | null;
   const active = list.filter((p) => p.is_active);
   const out = active.filter((p) => Number(p.stock) <= 0);
   const low = active.filter((p) => Number(p.stock) > 0 && Number(p.stock) <= Number(p.stock_alert));
@@ -28,6 +36,32 @@ export default async function Dashboard() {
         <p className="text-sm text-mute">Bonjour{name ? ` ${name.split(" ")[0]}` : ""},</p>
         <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Tableau de bord</h1>
       </header>
+
+      {(d || sv) && (
+        <section aria-label="Chiffres du jour" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {d && (
+            <>
+              <Link href="/gestion/statistiques" className="card bg-ink p-4 text-white hover:bg-ink/90">
+                <p className="text-sm text-white/70">Ventes du jour</p>
+                <p className="mt-1 font-display text-3xl font-extrabold tabular">{fcfa(d.revenue)}</p>
+                <p className="text-xs text-white/60">{d.tickets} vente{d.tickets > 1 ? "s" : ""}</p>
+              </Link>
+              <Link href="/gestion/statistiques" className="card p-4 hover:border-ink/25">
+                <p className="text-sm text-mute">Bénéfice du jour</p>
+                <p className="mt-1 font-display text-3xl font-extrabold text-leaf tabular">{fcfa(d.revenue_with_cost - d.cost)}</p>
+                <p className="text-xs text-mute">sur les produits avec prix d&apos;achat</p>
+              </Link>
+            </>
+          )}
+          {sv && (
+            <Link href="/gestion/prix-achat" className="card p-4 hover:border-ink/25">
+              <p className="text-sm text-mute">Valeur du stock</p>
+              <p className="mt-1 font-display text-3xl font-extrabold tabular">{fcfa(sv.value)}</p>
+              <p className="text-xs text-mute">{sv.products_without_cost ? `${sv.products_without_cost} produit${sv.products_without_cost > 1 ? "s" : ""} sans prix d'achat` : "au prix d'achat"}</p>
+            </Link>
+          )}
+        </section>
+      )}
 
       <section aria-label="Chiffres du stock" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {tiles.map((t) => (

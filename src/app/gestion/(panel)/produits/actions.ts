@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireStaff } from "@/lib/staff";
 import { parseNum, slugify } from "@/lib/format";
+import { writeCost } from "@/lib/costs";
 
 export type ProductState = { ok?: boolean; error?: string; message?: string };
 
@@ -60,11 +61,19 @@ const dbError = (msg: string) =>
   msg.includes("products_slug_key") ? "Un produit porte déjà ce nom." :
   "L'enregistrement a échoué. Réessayez.";
 
+function readCost(fd: FormData): { cost: number | null; error?: string } {
+  const cost = parseNum(fd.get("cost_price"));
+  if (cost != null && (!Number.isInteger(cost) || cost < 0 || cost > 10_000_000)) return { cost: null, error: "Prix d'achat invalide." };
+  return { cost };
+}
+
 export async function saveProduct(id: string, _prev: ProductState, fd: FormData): Promise<ProductState> {
-  const { supabase } = await requireStaff(["gerant", "stock"]);
+  const { supabase, userId } = await requireStaff(["gerant", "stock"]);
   const parsed = read(fd);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const v = parsed.data;
+  const { cost, error: costError } = readCost(fd);
+  if (costError) return { error: costError };
 
   const patch: Record<string, unknown> = { ...v, barcode: v.barcode || null };
   const photo = fd.get("photo");
@@ -77,6 +86,8 @@ export async function saveProduct(id: string, _prev: ProductState, fd: FormData)
 
   const { error } = await supabase.from("products").update(patch).eq("id", id);
   if (error) return { error: dbError(error.message) };
+  const { error: ce } = await writeCost(supabase, id, userId, cost);
+  if (ce && cost != null) return { error: "Produit enregistré, mais pas le prix d'achat. Réessayez." };
   revalidatePath("/gestion/produits");
   revalidatePath(`/gestion/produits/${id}`);
   return { ok: true, message: "Produit enregistré." };
@@ -87,6 +98,8 @@ export async function createProduct(_prev: ProductState, fd: FormData): Promise<
   const parsed = read(fd);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const v = parsed.data;
+  const { cost, error: costError } = readCost(fd);
+  if (costError) return { error: costError };
   const initial = parseNum(fd.get("initial_stock")) ?? 0;
   if (initial < 0 || (v.unit === "piece" && !Number.isInteger(initial))) return { error: "Stock de départ invalide." };
 
@@ -102,6 +115,7 @@ export async function createProduct(_prev: ProductState, fd: FormData): Promise<
     const up = await uploadPhoto(supabase, data.id, photo);
     if (up.url) await supabase.from("products").update({ image_url: up.url }).eq("id", data.id);
   }
+  if (cost != null) await writeCost(supabase, data.id, userId, cost);
   if (initial > 0) {
     await supabase.from("stock_movements").insert({ product_id: data.id, delta: initial, reason: "achat", note: "Stock de départ", created_by: userId });
   }

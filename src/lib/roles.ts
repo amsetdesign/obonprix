@@ -19,10 +19,12 @@ type NavItem = { href: string; label: string; roles: StaffRole[] };
 /** Menu du back-office : chacun ne voit que ce que son rôle permet (la base applique la même règle). */
 export const STAFF_NAV: NavItem[] = [
   { href: "/gestion", label: "Accueil", roles: ["gerant", "stock", "vendeur", "livreur"] },
+  { href: "/gestion/statistiques", label: "Statistiques", roles: ["gerant"] },
   { href: "/gestion/commandes", label: "Commandes", roles: ["gerant", "vendeur", "livreur"] },
   { href: "/gestion/produits", label: "Produits", roles: ["gerant", "stock", "vendeur"] },
   { href: "/gestion/stock", label: "Arrivages et pertes", roles: ["gerant", "stock"] },
   { href: "/gestion/inventaire", label: "Inventaire", roles: ["gerant", "stock"] },
+  { href: "/gestion/prix-achat", label: "Prix d'achat", roles: ["gerant", "stock"] },
   { href: "/gestion/equipe", label: "Équipe", roles: ["gerant"] },
   { href: "/gestion/reglages", label: "Réglages", roles: ["gerant"] },
 ];

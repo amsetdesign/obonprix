@@ -21,6 +21,7 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
   ]);
   if (!p) notFound();
   const editable = canEditCatalog(role);
+  const { data: costRow } = editable ? await supabase.from("product_costs").select("cost_price").eq("product_id", id).maybeSingle() : { data: null };
   // le journal du stock n'est lisible que par le gérant et la gestionnaire de stock (règle de la base)
   const { data: moves } = editable
     ? await supabase.from("stock_movements").select("id, delta, reason, note, created_at, profiles(full_name)").eq("product_id", id).order("created_at", { ascending: false }).limit(15)
@@ -39,7 +40,7 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
       {cree && <p className="rounded-xl bg-leaf-50 px-4 py-3 text-sm text-leaf">Produit créé.</p>}
 
       {editable ? (
-        <ProductForm action={saveProduct.bind(null, id)} categories={cats ?? []} initial={p} />
+        <ProductForm action={saveProduct.bind(null, id)} categories={cats ?? []} initial={{ ...p, cost_price: costRow?.cost_price ?? null }} />
       ) : (
         <div className="card grid gap-4 p-5 sm:grid-cols-3">
           <div><p className="text-xs text-mute">Prix</p><p className="font-semibold tabular">{fcfa(p.promo_price ?? p.price)}{p.unit === "kg" ? " /kg" : ""}</p></div>
