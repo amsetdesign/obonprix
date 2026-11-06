@@ -86,7 +86,7 @@ export default async function Home() {
           </div>
           <div className="relative min-h-80 overflow-hidden">
             <div className="absolute -bottom-[30%] left-1/2 aspect-square w-[90%] -translate-x-1/2 rounded-full bg-sun" aria-hidden />
-            <Image src="/egeries/detoure/telephone.webp" alt="Une cliente Ô Bon Prix commande sur son téléphone" fill sizes="(min-width: 768px) 45vw, 100vw" className="object-contain object-bottom pt-6" />
+            <Image src="/egeries/detoure/commande.webp" alt="Une cliente Ô Bon Prix passe commande sur son téléphone" fill sizes="(min-width: 768px) 45vw, 100vw" className="object-contain object-bottom pt-6" />
           </div>
         </div>
       </section>
