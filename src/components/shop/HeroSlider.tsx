@@ -23,9 +23,9 @@ const portion = (i: { name: string; qty: number; unit: string }) => {
 
 // Rayons de l'affiche officielle, recomposée en HTML pour rester lisible sur téléphone
 const POSTER_RAYONS = [
-  ["produits-frais", "Produits frais"],
-  ["epicerie-salee", "Épicerie salée"],
-  ["epicerie-sucree", "Épicerie sucrée"],
+  ["produits-frais", "Frais"],
+  ["epicerie-salee", "Salé"],
+  ["epicerie-sucree", "Sucré"],
   ["surgeles", "Surgelés"],
   ["boissons", "Boissons"],
   ["hygiene-entretien", "Hygiène"],
@@ -97,15 +97,16 @@ export default function HeroSlider({ minFee, promoCount, pack }: Props) {
 
     // 2. L'affiche : logo et six rayons
     <div key="affiche" className="relative size-full overflow-hidden bg-[radial-gradient(120%_120%_at_20%_30%,#e8242b_0%,#d1141b_45%,#9f0d12_100%)]">
-      <div className="relative flex h-full flex-col justify-center gap-3 p-4 sm:flex-row sm:items-center sm:gap-8 sm:p-8">
-        <div className="shrink-0 sm:w-[34%]">
-          <Image src="/brand/logo-blanc.png" alt="Ô Bon Prix Superette" width={720} height={355} className="h-auto w-36 sm:w-full" />
-        </div>
-        <ul className="grid flex-1 grid-cols-3 gap-2 sm:gap-3">
+      {/* la cliente de l'affiche, dans les rayons, montre de la main les produits à sa droite */}
+      <div className="absolute inset-y-0 left-0 w-[46%] sm:w-[48%]">
+        <Image src="/brand/affiche-dame.webp" alt="Une cliente au chariot présente les rayons Ô Bon Prix" fill sizes="(min-width: 1024px) 400px, 46vw" className="object-cover object-[80%_center] sm:object-right [mask-image:linear-gradient(to_right,black_88%,transparent)]" />
+      </div>
+      <div className="relative flex h-full items-center justify-end p-3 sm:p-6">
+        <ul className="grid w-[54%] grid-cols-2 gap-x-2 gap-y-1 sm:w-[51%] sm:grid-cols-3 sm:gap-x-2 sm:gap-y-3">
           {POSTER_RAYONS.map(([slug, label]) => (
             <li key={slug}>
               <Link href={`/rayons/${slug}`} className="group flex flex-col items-center gap-1 sm:gap-2">
-                <span className="rounded-full border border-white/70 px-2 py-0.5 text-[9px] font-extrabold tracking-wide text-white uppercase group-hover:bg-white group-hover:text-red sm:px-3 sm:py-1 sm:text-[11px]">{label}</span>
+                <span className="rounded-full border border-white/70 px-2 py-0.5 text-[9px] font-extrabold tracking-wide whitespace-nowrap text-white uppercase group-hover:bg-white group-hover:text-red sm:px-3 sm:py-1 sm:text-[11px]">{label}</span>
                 <span className="relative block aspect-[2.2/1] w-full">
                   <Image src={`/rayons/${slug}.webp`} alt="" fill sizes="(min-width: 1024px) 160px, 30vw" className="object-contain transition-transform group-hover:scale-105 [mask-image:radial-gradient(ellipse_at_center,black_55%,transparent_75%)]" />
                 </span>
