@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { fcfa, qty as fmtQty } from "@/lib/format";
-import { IconClose, IconMinus, IconPlus, IconReceipt, IconSearch, IconTrash } from "@/components/icons";
+import { IconClose, IconReceipt, IconSearch, IconTrash } from "@/components/icons";
 import { cancelSale, recordSale, todaySales } from "./actions";
 import Receipt, { type ReceiptData } from "./Receipt";
 
@@ -45,7 +45,8 @@ export default function Register({ products, categories, cashier, isManager, sto
   const [lines, setLines] = useState<Line[]>([]);
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState<number | null>(null);
-  const [weighing, setWeighing] = useState<{ product: Product; value: string } | null>(null);
+  // ligne sélectionnée (surlignée) : le pavé numérique règle sa quantité, comme sur Odoo
+  const [sel, setSel] = useState<{ id: string; buf: string; fresh: boolean } | null>(null);
   const [paying, setPaying] = useState<{ method: Pay; cash: string } | null>(null);
   const [receipt, setReceipt] = useState<ReceiptData | null>(null);
   const [history, setHistory] = useState<Awaited<ReturnType<typeof todaySales>> | null>(null);
@@ -77,8 +78,40 @@ export default function Register({ products, categories, cashier, isManager, sto
       return [...ls, { ...p, qty: q }];
     });
   };
-  const tap = (p: Product) => (p.unit === "kg" ? setWeighing({ product: p, value: "" }) : addQty(p, 1));
   const setQty = (id: string, q: number) => setLines((ls) => ls.flatMap((l) => (l.id !== id ? [l] : q > 0 ? [{ ...l, qty: Math.round(q * 1000) / 1000 }] : [])));
+  /** Toucher un produit : +1 (ou 1 kg) et la ligne devient la ligne sélectionnée */
+  const tap = (p: Product) => {
+    const exists = lines.some((l) => l.id === p.id);
+    if (!exists || p.unit === "piece") addQty(p, 1);
+    setSel({ id: p.id, buf: "", fresh: true });
+  };
+  const selLine = lines.find((l) => l.id === sel?.id);
+
+  /** Pavé numérique : la première touche remplace la quantité, les suivantes complètent */
+  const press = (k: string) => {
+    if (!sel || !selLine) return;
+    if (k === "suppr") { setQty(sel.id, 0); setSel(null); return; }
+    if (k === "+1" || k === "-1") {
+      const q = selLine.qty + (k === "+1" ? 1 : -1);
+      setQty(sel.id, q);
+      if (q <= 0) setSel(null); else setSel({ ...sel, fresh: true });
+      return;
+    }
+    if (k === "⌫") {
+      const buf = sel.fresh ? "" : sel.buf.slice(0, -1);
+      if (!buf) { setQty(sel.id, 0); setSel(null); return; }
+      setSel({ ...sel, buf, fresh: false });
+      const q = Number(buf.replace(",", "."));
+      if (q > 0) setQty(sel.id, q);
+      return;
+    }
+    if (k === "," && (selLine.unit !== "kg" || (!sel.fresh && sel.buf.includes(",")))) return;
+    const buf = (sel.fresh ? "" : sel.buf) + (k === "," && sel.fresh ? "0," : k);
+    if (buf.length > 7) return;
+    setSel({ ...sel, buf, fresh: false });
+    const q = Number(buf.replace(",", "."));
+    if (q > 0) setQty(sel.id, selLine.unit === "kg" ? q : Math.floor(q));
+  };
 
   // douchette : elle tape le code-barres puis « Entrée »
   const onSearchKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -111,6 +144,7 @@ export default function Register({ products, categories, cashier, isManager, sto
       });
       setPaying(null);
       setLines([]);
+      setSel(null);
     });
   };
 
@@ -179,30 +213,30 @@ export default function Register({ products, categories, cashier, isManager, sto
         <aside className="flex w-[380px] shrink-0 flex-col border-l border-line bg-white">
           <div className="flex items-center justify-between border-b border-line px-4 py-3">
             <p className="font-display text-lg font-extrabold">Ticket <span className="text-sm font-semibold text-mute">({count} article{count > 1 ? "s" : ""})</span></p>
-            {lines.length > 0 && <button type="button" onClick={() => setLines([])} className="flex items-center gap-1 text-sm text-mute hover:text-red"><IconTrash className="size-4" /> Vider</button>}
+            {lines.length > 0 && <button type="button" onClick={() => { setLines([]); setSel(null); }} className="flex items-center gap-1 text-sm text-mute hover:text-red"><IconTrash className="size-4" /> Vider</button>}
           </div>
           <ul className="min-h-0 flex-1 divide-y divide-line overflow-y-auto">
-            {lines.map((l) => (
-              <li key={l.id} className="px-4 py-2.5">
-                <div className="flex justify-between gap-2 text-sm">
-                  <span className="font-semibold">{l.name}</span>
-                  <span className="font-semibold tabular">{fcfa(lineTotal(l))}</span>
-                </div>
-                <div className="mt-1.5 flex items-center justify-between">
-                  <span className="text-xs text-mute tabular">{fcfa(l.price)}{l.unit === "kg" ? " /kg" : ""}</span>
-                  {l.unit === "kg" ? (
-                    <button type="button" onClick={() => setWeighing({ product: l, value: String(l.qty).replace(".", ",") })} className="rounded-lg bg-cream px-3 py-2 text-sm font-semibold tabular">{fmtQty(l.qty, "kg")}</button>
-                  ) : (
-                    <span className="flex items-center gap-1">
-                      <button type="button" onClick={() => setQty(l.id, l.qty - 1)} className="flex size-10 items-center justify-center rounded-lg bg-cream" aria-label="Moins un"><IconMinus className="size-4" /></button>
-                      <span className="w-8 text-center font-bold tabular">{l.qty}</span>
-                      <button type="button" onClick={() => setQty(l.id, l.qty + 1)} className="flex size-10 items-center justify-center rounded-lg bg-cream" aria-label="Plus un"><IconPlus className="size-4" /></button>
+            {lines.map((l) => {
+              const active = sel?.id === l.id;
+              return (
+                <li key={l.id}>
+                  <button type="button" onClick={() => setSel({ id: l.id, buf: "", fresh: true })} aria-pressed={active}
+                    className={`block w-full px-4 py-2.5 text-left ${active ? "bg-red-50 shadow-[inset_4px_0_0_var(--color-red)]" : "hover:bg-cream"}`}>
+                    <span className="flex justify-between gap-2 text-sm">
+                      <span className="font-semibold">{l.name}</span>
+                      <span className="font-semibold tabular">{fcfa(lineTotal(l))}</span>
                     </span>
-                  )}
-                </div>
-              </li>
-            ))}
-            {!lines.length && <li className="p-8 text-center text-sm text-mute">Touchez un produit ou scannez un code-barres.</li>}
+                    <span className="mt-0.5 flex items-center justify-between text-xs text-mute tabular">
+                      <span>{fcfa(l.price)}{l.unit === "kg" ? " /kg" : ""}</span>
+                      <span className={`rounded-md px-2 py-0.5 text-sm font-bold ${active ? "bg-red text-white" : "bg-cream text-ink"}`}>
+                        {active && !sel.fresh ? `${sel.buf}${l.unit === "kg" ? " kg" : ""}` : fmtQty(l.qty, l.unit)}
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+            {!lines.length && <li className="p-8 text-center text-sm text-mute">Touchez un produit ou scannez un code-barres, puis tapez la quantité sur le pavé.</li>}
           </ul>
           <div className="space-y-3 border-t border-line p-4">
             {error && !paying && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
@@ -210,42 +244,23 @@ export default function Register({ products, categories, cashier, isManager, sto
               <span className="text-lg font-semibold">Total</span>
               <span className="font-display text-4xl font-black tabular">{fcfa(total)}</span>
             </div>
+            <div className="grid grid-cols-4 gap-1.5" aria-label="Pavé numérique">
+              {["7", "8", "9", "⌫", "4", "5", "6", "suppr", "1", "2", "3", ",", "0", "00", "-1", "+1"].map((k) => (
+                <button key={k} type="button" disabled={!selLine} onClick={() => press(k)}
+                  className={`h-12 rounded-lg text-lg font-bold tabular disabled:opacity-35 ${k === "suppr" ? "bg-red-50 text-sm text-red" : /^[0-9,]+$/.test(k) ? "bg-cream active:bg-line" : "bg-ink/5 text-base active:bg-line"}`}
+                  aria-label={k === "⌫" ? "Effacer un chiffre" : k === "suppr" ? "Supprimer la ligne" : k === "+1" ? "Plus un" : k === "-1" ? "Moins un" : k}>
+                  {k === "suppr" ? "Suppr." : k === "-1" ? "−1" : k}
+                </button>
+              ))}
+            </div>
             <div className="grid grid-cols-3 gap-2">
-              <button type="button" disabled={!lines.length} onClick={() => pay("especes")} className="h-16 rounded-xl bg-leaf text-base font-bold text-white disabled:opacity-40">Espèces</button>
-              <button type="button" disabled={!lines.length} onClick={() => pay("wave")} className="h-16 rounded-xl bg-[#1dc3ff] text-base font-bold text-ink disabled:opacity-40">Wave</button>
-              <button type="button" disabled={!lines.length} onClick={() => pay("om")} className="h-16 rounded-xl bg-[#ff7900] text-base font-bold text-white disabled:opacity-40">Orange Money</button>
+              <button type="button" disabled={!lines.length} onClick={() => pay("especes")} className="h-14 rounded-xl bg-leaf text-base font-bold text-white disabled:opacity-40">Espèces</button>
+              <button type="button" disabled={!lines.length} onClick={() => pay("wave")} className="h-14 rounded-xl bg-[#1dc3ff] text-base font-bold text-ink disabled:opacity-40">Wave</button>
+              <button type="button" disabled={!lines.length} onClick={() => pay("om")} className="h-14 rounded-xl bg-[#ff7900] text-base font-bold text-white disabled:opacity-40">Orange Money</button>
             </div>
           </div>
         </aside>
       </div>
-
-      {/* pesée d'un produit au kilo */}
-      {weighing && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-ink/50 p-4" role="dialog" aria-modal aria-label={`Poids : ${weighing.product.name}`}>
-          <div className="w-full max-w-sm space-y-4 rounded-2xl bg-white p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div><p className="font-display text-lg font-extrabold">{weighing.product.name}</p><p className="text-sm text-mute">{fcfa(weighing.product.price)} le kilo</p></div>
-              <button type="button" onClick={() => setWeighing(null)} aria-label="Fermer"><IconClose className="size-6" /></button>
-            </div>
-            <p className="rounded-xl bg-cream px-4 py-3 text-right font-display text-4xl font-black tabular">{weighing.value || "0"} <span className="text-xl">kg</span></p>
-            <p className="text-right text-sm text-mute tabular">= {fcfa(Math.round(weighing.product.price * (Number(weighing.value.replace(",", ".")) || 0)))}</p>
-            <Keypad decimal value={weighing.value} onChange={(v) => setWeighing({ ...weighing, value: v })} />
-            <button
-              type="button"
-              onClick={() => {
-                const q = Number(weighing.value.replace(",", "."));
-                if (!(q > 0)) return;
-                const existing = lines.find((l) => l.id === weighing.product.id);
-                if (existing) setQty(existing.id, q); else addQty(weighing.product, q);
-                setWeighing(null);
-              }}
-              className="btn-primary h-14 w-full text-lg"
-            >
-              Valider le poids
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* paiement */}
       {paying && (
